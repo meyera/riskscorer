@@ -1,0 +1,20 @@
+Package: riskscorer
+Type: Package
+Title: An R Package for Calculating Surgical Risk Scores
+Version: 0.0.1
+Authors@R: person("Alexander", "Meyer", email = "meyer.alexander@gmail.com",
+                  role = c("aut", "cre"))
+Maintainer: Alexander Meyer <meyer.alexander@gmail.com>
+Description: More about what it does (maybe more than one line)
+License: GPL-3
+LazyData: TRUE
+Imports: dplyr,
+    httr,
+    jsonlite,
+    purrr,
+    plumber,
+    ensurer,
+    stringr,
+    car,
+    readr
+Suggests: testthat
