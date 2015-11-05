@@ -21,7 +21,18 @@
 #'             'black', 'asian', 'asianblack'
 #' @param hispanic_ethnicity Following values are allowed: 'No', 'Yes',
 #'             "Not Documented"
-#'
+#' @param dialysis Indicate whether the patient is currently (prior to surgery)
+#'                 undergoing dialysis: boolean string or "Unknown"
+#' @param crea Indicate the creatinine level closest to the date and time prior
+#'             surgery but prior to anesthetic management (induction area or operating room)
+#' @param acs_type Type of Acute Coronary Syndrom at admission:
+#'                 'No Symptoms', 'Other', 'Angina equivalent', 'Stable Angina',
+#'                 'Unstable Angina', 'STEMI', 'NSTEMI'
+#'                 This field is called in the STS web app "Cardiac Symptoms - At Time Of Surgery"
+#'                 I do not think this is appropiate - it mixes symptoms with disease entities
+#' @param prior_mi Indicate if the patient has had at least one documented previous
+#'                 myocardial infarction at any time prior to this surgery.
+#'                 Values: '6h', '6-24h', '1-7d', '8-21d', 'longer', 'No', 'Unknown'
 #'
 #' @return a list of the predicted risks of the at the time of request current
 #'         STS risk model
@@ -43,7 +54,11 @@ calc_sts <- function(proc_cabg = NULL,
                      lvef = NULL,
                      chf_2w = NULL,
                      race = NULL,
-                     hispanic_ethnicity = NULL
+                     hispanic_ethnicity = NULL,
+                     dialysis = NULL,
+                     crea = NULL,
+                     acs_type = NULL,
+                     prior_mi = NULL
                      ) {
 
   queryList <- list()
@@ -123,17 +138,90 @@ calc_sts <- function(proc_cabg = NULL,
                                                 additionals = "Not Documented")
   }
 
+  if (!is.null(dialysis)) {
+      queryList$dialysis <- parse_bool_and_add(stringr::str_to_title(dialysis),
+                                                additionals = "Unknown")
+  }
+
+  if (!is.null(crea)) {
+    queryList$creatlst <- ensurer::ensure(crea, is.numeric(.), . > 0.1, . < 30)
+  }
+
+  if (!is.null(crea)) {
+    queryList$creatlst <- ensurer::ensure(crea, is.numeric(.), . > 0.1, . < 30)
+  }
+
+  if (!is.null(acs_type)) {
+    acs_type <- stringr::str_to_upper(acs_type)
+    if (acs_type == "OTHER") {
+      queryList$cardsymptimeofsurg <- "Other"
+    } else if (acs_type == "NO SYMPTOMS") {
+      queryList$cardsymptimeofsurg <- "No Symptoms"
+    } else if (acs_type == "ANGINA EQUIVALENT") {
+      queryList$cardsymptimeofsurg <- "Angina equivalent"
+    } else if (acs_type == "STABLE ANGINA") {
+      queryList$cardsymptimeofsurg <- "Stable Angina "
+    } else if (acs_type == "UNSTABLE ANGINA") {
+      queryList$cardsymptimeofsurg <- "Unstable Angina"
+    } else if (acs_type == "NSTEMI") {
+      queryList$cardsymptimeofsurg <- "Non-ST Elevation MI (Non-STEMI)"
+    } else if (acs_type == "STEMI") {
+      queryList$cardsymptimeofsurg <- "ST Elevation MI (STEMI)"
+    } else {
+      stop("ACS type or cardiac symptoms at time of surgery are not recognized.")
+    }
+  }
+
+  if (!is.null(prior_mi)) {
+    choices = c("6h"      = " <=6 Hrs",
+                '6-24h'   = " >6 Hrs but <24 Hrs",
+                '1-7d'    = "1 to 7 Days",
+                '8-21d'   = "8 to 21 Days",
+                'longer'  = " >21 Days",
+                'No'      = "No",
+                'Unknown' = "Unknown")
+    names(choices) <- stringr::str_to_upper(names(choices))
+
+    prior_mi <- stringr::str_to_upper(prior_mi)
+
+    if (prior_mi %in% names(choices[1:5])) {
+      queryList$prevmi <- "Yes"
+      queryList$miwhen <- choices[prior_mi]
+    } else if (prior_mi %in% names(choices[6:7])) {
+      queryList$prevmi <- choices[prior_mi]
+    } else if (prior_mi %in% c("F", "FALSE", "0")) {
+      queryList$prevmi <- "No"
+    } else {
+      stop("Coding if  of 'prior_mi' not recognized.")
+    }
+  }
 
   #queryList <- as.list(match.call())[-1]
   #queryList <- purrr::compact(queryList)
-  res <- httr::POST("http://riskcalc.sts.org/stswebriskcalc/v1/calculate/stsall",
-                    body = queryList,
-                    encode = "json",
-                    httr::verbose())
+  do_sts_request(queryList, verbose = TRUE)
+}
 
-  httr::http_status(res)
-  res$status_code
-  httr::stop_for_status(res)
+do_sts_request <- function(queryList, verbose = FALSE) {
+
+  webservice_url <- "http://riskcalc.sts.org/stswebriskcalc/v1/calculate/stsall"
+
+  if (verbose) {
+    res <- httr::POST(webservice_url,
+                      body = queryList,
+                      encode = "json",
+                      httr::verbose())
+  } else {
+    res <- httr::POST(webservice_url,
+                      body = queryList,
+                      encode = "json",
+                      httr::verbose())
+  }
+
+  if (verbose) {
+    httr::http_status(res)
+    res$status_code
+    httr::stop_for_status(res)
+  }
 
   httr::content(res)
 }
