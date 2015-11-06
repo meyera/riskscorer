@@ -4,19 +4,53 @@ author: "Alexander Meyer"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Introduction to riskscorer}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r setup, results='hide', echo=FALSE}
+library(pander)
+library(printr)
+library(wakefield)
+
+knitr::opts_chunk$set(dev = "CairoPNG")
+
+```
+
+
 The package riskscorer is an attempt to provide an easy interface to clinical risk models. A the moment only operative risk scores in cardiac surgery are implemented:
-- [STS Score](http://riskcalc.sts.org/)
-- [EuroScore I](http://www.euroscore.org)
-- [EuroScore II](http://www.euroscore.org)
+
+* [STS Score](http://riskcalc.sts.org/)
+* [EuroScore I](http://www.euroscore.org)
+* [EuroScore II](http://www.euroscore.org)
 
 ## Generating a patient data set
 
-> use the package wakefield here
+```{r data-sim}
+library(dplyr)
+
+n = 2
+df_sim <- r_data_frame(
+    n = n,
+    id,
+    race(x = c("White", "Hispanic", "Black", "Asian"), prob = c(0.8, 0.1, 0.05, 0.05), name = "Race"),
+    age(x = 30:90),
+    nyha = level,
+    sex,
+    lvef = round(rnorm(n = n, mean = 50, sd = 10), digits = 0),
+    crea = round(rnorm(n = n, mean = 1.1, sd = 0.2), digits = 3),
+    height_cm,
+    group(x = c("Yes", "No"), prob = c(0.7, 0.3), name = "CABG"),
+    group(x = c("Yes", "No"), prob = c(0.3, 0.7), name = "AKE")
+)
+df_sim
+
+df_sim %>% do(
+  calc_sts(proc_valve = .$AKE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+)
+```
+
 
 ## STS Score Implemtation
 
@@ -33,11 +67,26 @@ Present web service posibbility with plumber --> potential for automatation of r
 
 ## ES I and ES II implementation
 
-Terms and conditions disalllow usage or reverse engenierring
+Terms and conditions disalllow usage or reverse engenierring.
+
+Risk model is simpler and coefficients are published in [XYZ et al., 20XX](http://citation)
+- ES I
+- ES II 
 
 ## Vignette Info
 
 Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Pandoc tester
+```{r,warning=FALSE,message=FALSE}
+pander::Pandoc.brew(text = "This is a test: <%= runif(10)%>")
+pander::Pandoc.brew(text = "This is a test: <%= as.list(runif(10))%>")
+pander::Pandoc.brew(text = "This is a test: \n\n<%= mtcars[1:3, ]%>")
+#pander::Pandoc.brew(text = "This is a test: \n\n<%= plot(1:10)%>")
+pander::Pandoc.brew(text='<%for (i in 1:5) {%>\n Pi has a lot (<%=i%>) of power:<%=pi^i%><%}%>')
+
+```
+
 
 ## Styles
 
