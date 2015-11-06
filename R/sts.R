@@ -208,15 +208,15 @@ calc_sts <- function(proc_cabg = NULL,
   }
 
   if (!is.null(height_cm)) {
-    queryList$heightcm <- ensurer::ensure(height_cm, is.numeric(.), . %in% 50:250)
+    queryList$heightcm <- ensurer::ensure(height_cm, is.numeric(.), . >= 20, . <= 251)
   }
 
   if (!is.null(weight_kg)) {
-    queryList$weightkg <- ensurer::ensure(weight_kg, is.numeric(.), . %in% 30:250)
+    queryList$weightkg <- ensurer::ensure(weight_kg, is.numeric(.), . >= 10, . <= 250)
   }
 
   if (!is.null(lvef)) {
-    queryList$hdef <- ensurer::ensure(lvef, is.numeric(.), . %in% 1:99)
+    queryList$hdef <- ensurer::ensure(lvef, is.numeric(.), . >= 1, . <= 99)
     queryList$hdefd <- "Yes"
   }
 
