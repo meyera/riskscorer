@@ -36,7 +36,10 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #'
 #' @param age Age in years, must be within 20 and 100
 #'
-#' @param gender Gender of the patient, should be "Male" or "Female"
+#' @param gender Gender of the patient, should be "Male" or "Female", 'F' or 'M',
+#'        plus in addition
+#'          all boolean FALSE strings --> Male
+#'          all boolean TRUE strings --> Female
 #'
 #' @param height_cm Patient's height in cm
 #'
@@ -173,7 +176,7 @@ calc_sts <- function(proc_cabg = NULL,
 
   queryList <- list()
 
-  queryList$age <- ensurer::ensure(age, is.numeric(.), . %in% 20:100)
+  queryList$age <- ensurer::ensure(age, is.numeric(.), . > 20 , . < 100)
   queryList$gender <- ensurer::ensure(stringr::str_to_title(gender),
                                      . %in% c("Male", "Female"))
 
