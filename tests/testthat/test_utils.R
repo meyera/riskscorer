@@ -1,7 +1,7 @@
 library(testthat)
 library(riskscorer)
 
-context("Checking Utils")
+context("Checking boolean parsing")
 
 test_that("Boolean strings return TRUE", {
   expect_true(parse_bool("y"))
@@ -53,4 +53,42 @@ test_that("parse_bool_and_add works", {
 
   expect_equal("Undisclosed", parse_bool_and_add("Undisclosed",
                                                  additionals = c("Unknown", "Undisclosed")))
+})
+
+context("Checking Sex parsing")
+test_that("parse_sex works without arguments", {
+  expect_equal("Male", parse_sex("male"))
+  expect_equal("Male", parse_sex("m"))
+  expect_equal("Male", parse_sex("mALE"))
+  expect_equal("Male", parse_sex("M"))
+  expect_equal("Female", parse_sex("Female"))
+  expect_equal("Female", parse_sex("FEMalE"))
+  expect_equal("Female", parse_sex("F"))
+  expect_equal("Female", parse_sex("f"))
+  expect_true(is.null(parse_sex(NULL)))
+  expect_true(is.null(parse_sex(NA)))
+})
+
+test_that("parse_sex works with special arguments", {
+  expect_equal("Male", parse_sex("male", male_numeric_code = 1, female_numeric_code = 0))
+  expect_equal("Male", parse_sex("1", male_numeric_code = 1, female_numeric_code = 9))
+  expect_equal("Male", parse_sex("1", male_numeric_code = 1, female_numeric_code = 0))
+  expect_equal("Male", parse_sex("0", male_numeric_code = 0, female_numeric_code = 1))
+  expect_equal("Female", parse_sex("1", male_numeric_code = 0, female_numeric_code = 1))
+  expect_equal("Female", parse_sex("F"))
+  expect_equal("Female", parse_sex("f"))
+  expect_equal("Female", parse_sex("FAlse"))
+  expect_equal("Male", parse_sex(TRUE))
+  expect_equal("Female", parse_sex("No"))
+  expect_equal("Male", parse_sex("Y"))
+  expect_equal("Female", parse_sex("N"))
+  expect_equal("Female", parse_sex("n"))
+  expect_equal("Female", parse_sex("n", male_bool_code = TRUE, male_numeric_code = 0, female_numeric_code = 1))
+  expect_equal("Female", parse_sex("FALSE", male_bool_code = TRUE, male_numeric_code = 0, female_numeric_code = 1))
+  expect_equal("Female", parse_sex(F, male_bool_code = TRUE, male_numeric_code = 0, female_numeric_code = 1))
+  expect_equal("Female", parse_sex("NO", male_bool_code = TRUE, male_numeric_code = 0, female_numeric_code = 1))
+  expect_equal("Male", parse_sex("TRUE", male_bool_code = TRUE, male_numeric_code = 0, female_numeric_code = 1))
+  expect_error(parse_sex("T", male_bool_code = TRUE, male_numeric_code = 0, female_numeric_code = 1))
+  expect_equal("Male", parse_sex("Y", male_bool_code = TRUE, male_numeric_code = 0, female_numeric_code = 1))
+  expect_equal("Male", parse_sex("Yes", male_bool_code = TRUE, male_numeric_code = 0, female_numeric_code = 1))
 })
