@@ -15,7 +15,7 @@ test_that("Case 1 gets correctly calculated (see PDF)", {
 
   expect_true(is.list(sts_res))
   expect_equal(length(sts_res), 10)
-  expect_equal(sts_res$proceduretype, "AV Replacement + CAB")
-  expect_equal(sts_res$predmort, 0.01415)
-  expect_equal(sts_res$predrenf, 0.01895)
+  expect_equal(sts_res$procedure, "AV Replacement + CAB")
+  expect_equal(sts_res$mort, 0.01415)
+  expect_equal(sts_res$renal_failure, 0.01895)
 })

@@ -17,4 +17,7 @@ Imports: dplyr,
     stringr,
     car,
     readr
-Suggests: testthat
+Suggests: testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

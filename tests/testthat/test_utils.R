@@ -38,19 +38,19 @@ test_that("parse_bool_and_add works", {
   expect_false(parse_bool_and_add("0", return_val_false = FALSE))
   expect_true(parse_bool_and_add("T", return_val_false = FALSE, return_val_true = TRUE))
   expect_equal("Unknown", parse_bool_and_add("Unknown",
-                                            additionals = "Unknown",
-                                            return_val_false = FALSE,
-                                            return_val_true = TRUE))
+                                             additionals = "Unknown",
+                                             return_val_false = FALSE,
+                                             return_val_true = TRUE))
   expect_true(parse_bool_and_add("1",
                                  additionals = "Unknown",
                                  return_val_false = FALSE,
                                  return_val_true = TRUE))
 
   expect_false(parse_bool_and_add("0",
-                                 additionals = c("Unknown", "Undisclosed"),
-                                 return_val_false = FALSE,
-                                 return_val_true = TRUE))
+                                  additionals = c("Unknown", "Undisclosed"),
+                                  return_val_false = FALSE,
+                                  return_val_true = TRUE))
 
   expect_equal("Undisclosed", parse_bool_and_add("Undisclosed",
-                                 additionals = c("Unknown", "Undisclosed")))
+                                                 additionals = c("Unknown", "Undisclosed")))
 })
