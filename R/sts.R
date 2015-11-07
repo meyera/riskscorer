@@ -139,6 +139,54 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #'                      Values: "diet", "oral", "insulin", "other", "other_subcutaneous",
 #'                              "none", "unknown"
 #'
+#' @param htn Hypertension, see STS definition
+#'            Values: "Yes", "No", or booleans string, "Unknown"
+#'
+#' @param immsupp Immunosuppression: Indicate whether immunocompromise is present
+#'                due to immunosuppressive medication therapy within 30 days
+#'                preceding the operative procedure or existing medical condition
+#'                (see training manual). This includes, but is not limited to
+#'                systemic steroid therapy, anti-rejection medications and chemotherapy.
+#'                This does not include topical steroid applications, one time systemic
+#'                therapy, inhaled steroid therapy or preprocedure protocol
+#'                Values: "Yes", "No", or booleans string, "Unknown"
+#'
+#' @param endocarditis History of endocarditis: must meet at least 1 of the
+#'                     following criteria:
+#'                      1. organisms cultured from valve or vegetation.
+#'                      2. 2 or more of the following signs or symptoms:
+#'                          * fever (>38°C)
+#'                          * new or changing murmur*
+#'                          * embolic phenomena*
+#'                          * skin manifestations* (i.e., petechiae, splinter
+#'                            hemorrhages, painful subcutaneous nodules)
+#'                          * congestive heart failure*
+#'                          * cardiac conduction abnormality*
+#'                      With no other recognized cause and at least 1 of the following:
+#'                        a. organisms cultured from 2 or more blood cultures
+#'                        b. organisms seen on Gram’s stain of valve when culture
+#'                           is negative or not done
+#'                        c. valvular vegetation seen during an invasive procedure
+#'                           or autopsy
+#'                        d. positive laboratory test on blood or urine
+#'                           (e.g., antigen tests for H influenzae, S pneumoniae,
+#'                           N meningitidis, or Group B Streptococcus)
+#'                        e. evidence of new vegetation seen on echocardiogram
+#'                           and if diagnosis is made antemortem, physician institutes
+#'                           appropriate antimicrobial therapy.
+#'                     CDC, January 2013 Choose 'Yes' for patients with pre-operative
+#'                     endocarditis who begin antibiotics post-op.
+#'                     Code yes for patients who are diagnosed intraoperatively.
+#'                     Values: "Yes", "No", or booleans string, "Unknown"
+#'
+#' @param endocarditis_type Type of endocarditis the patient has. If the patient is
+#'                          currently being treated for endocarditis, the disease
+#'                          is considered active.
+#'                          If no antibiotic medication (other than prophylactic
+#'                          medication) is being given at the time of surgery,
+#'                          then the infection is considered treated.
+#'                     Values: 'Active' or 'Treated'
+#'
 #' @return a list of the predicted risks of the at the time of request current
 #'         STS risk model
 #' @export
@@ -171,7 +219,11 @@ calc_sts <- function(proc_cabg = NULL,
                      stroke = NULL,
                      pvd = NULL,
                      diabetes = NULL,
-                     diabetes_ctrl = NULL
+                     diabetes_ctrl = NULL,
+                     htn = NULL,
+                     immsupp = NULL,
+                     endocarditis = NULL,
+                     endocarditis_type = NULL
                      ) {
 
   queryList <- list()
@@ -372,43 +424,70 @@ calc_sts <- function(proc_cabg = NULL,
   }
 
   if (!is.null(diabetes_ctrl)) {
-    #diet", "oral", "insulin", "other", "other_subcutaneous", "none", "unknown"
-
-    queryList$diabctrl <- xxx
-
-    chrlungd <- stringr::str_to_upper(chrlungd)
+    diabetes_ctrl <- stringr::str_to_upper(diabetes_ctrl)
 
     choices <- c("unknown" = "Unknown",
-                 "yes-unknown" = "Lung disease documented, severity unknown",
-                 "yes-mild" = "Mild",
-                 "yes-moderate" = "Moderate",
-                 "yes-severe" = "Severe")
+                 "other_subcutaneous" = "Other subcutaneous medication",
+                 "other" = "Other",
+                 "insulin" = "Insulin",
+                 "diet" = "Diet only",
+                 "oral" = "Oral")
     names(choices) <- stringr::str_to_upper(names(choices))
 
-    if (chrlungd %in% c("NONE","NO", "N", "FALSE", "F", "0")) {
-      queryList$chrlungd <- "No"
-    } else if (chrlungd %in% names(choices)) {
-      queryList$chrlungd <- choices[chrlungd]
+    if (diabetes_ctrl %in% c("NONE","NO", "N", "FALSE", "F", "0")) {
+      queryList$diabctrl <- "None"
+    } else if (diabetes_ctrl %in% names(choices)) {
+      queryList$diabctrl <- choices[diabetes_ctrl]
     } else {
-      stop("Coding of 'chrlungd' not recognized.")
+      stop("Coding of 'diabetes_ctrl' not recognized.")
     }
   }
 
+  if (!is.null(htn)) {
+    queryList$hypertn <- parse_bool_and_add(stringr::str_to_title(htn),
+                                             additionals = "Unknown")
+  }
+
+  if (!is.null(immsupp)) {
+    queryList$immsupp <- parse_bool_and_add(stringr::str_to_title(immsupp),
+                                             additionals = "Unknown")
+  }
+
+  if (!is.null(endocarditis)) {
+    queryList$infendo <- parse_bool_and_add(stringr::str_to_title(endocarditis),
+                                             additionals = "Unknown")
+  }
+
+  if (!is.null(endocarditis_type)) {
+    endocarditis_type <- stringr::str_to_upper(endocarditis_type)
+
+    if (endocarditis_type %in% c("ACTIVE", "ACT")) {
+      queryList$infendty <- "Active"
+    } else if (endocarditis_type %in% c("TREATED", "TRT", "TREAT")) {
+      queryList$infendty <- "Treated"
+    } else {
+      stop("Coding of 'endocarditis_type' not recognized.")
+    }
+  }
+
+  # todo
+
   #queryList <- as.list(match.call())[-1]
   #queryList <- purrr::compact(queryList)
-  riskdf <- dplyr::as_data_frame(do_sts_request(queryList, verbose = TRUE))
+  riskdf <- dplyr::as_data_frame(do_sts_request(queryList, verbose = FALSE))
 
   dplyr::rename(riskdf,
-                procedure = proceduretype,
-                mort = predmort,
-                morb_mort = predmm,
-                dsw_infect = preddeep,
-                stroke = predstro,
-                long_vent = predvent,
-                re_op = predreop,
-                renal_failure = predrenf,
-                short_los = pred6d,
-                long_los = pred14d)
+                Procedure = proceduretype,
+                Mortality = predmort,
+                Morbidity_Mortality = predmm,
+                DSW_Infection = preddeep,
+                Perm_Stroke = predstro,
+                Prolong_Vent = predvent,
+                Reoperation = predreop,
+                Renal_failure = predrenf,
+                Long_LOS = pred14d,
+                Short_LOS = pred6d
+                )
 }
 
 
