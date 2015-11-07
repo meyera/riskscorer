@@ -13,51 +13,82 @@ vignette: >
 library(pander)
 library(printr)
 library(wakefield)
+library(dplyr)
 
 knitr::opts_chunk$set(dev = "CairoPNG")
 
 ```
 
 
-The package riskscorer is an attempt to provide an easy interface to clinical risk models. A the moment only operative risk scores in cardiac surgery are implemented:
+The package *riskscorer* is an attempt to provide an easy programatical interface to clinical risk models. It supports fuzzy argument matching and is webservice ready via [plumber](http://plumber.trestletech.com/) decoration.
+A the moment only operative risk scores in cardiac surgery are implemented:
 
 * [STS Score](http://riskcalc.sts.org/)
 * [EuroScore I](http://www.euroscore.org)
 * [EuroScore II](http://www.euroscore.org)
 
-## Generating a patient data set
+The programatical interface can be used in various scenarios:
+* Simulation research based on a risk score model (see Figure 1)
+* Data pre-processing before analysis.
+* Usage of the webservice for rapid batch processing of a data pool
 
+Figure 1 shows a simulated data set. Except age and sex, all covariates are fixed.
+  > **Crea: 0.8 - 3.0 mg/dL**
+  > **Sex: Male or Female**
+  > Procedure: CABG+AVR
+  > Weight: 75 kg
+  > Height: 170 cm
+  > Symptoms of heart failure
+  > Age: 75
+  > LVEF: 60 %
+  
 ```{r data-sim, cache=TRUE}
-library(dplyr)
+# n = 1
+# df_sim <- r_data_frame(
+#     n = n,
+#     id,
+#     race(x = c("White", "Hispanic", "Black", "Asian"), prob = c(0.8, 0.1, 0.05, 0.05), name = "Race"),
+#     age(x = 50:90),
+#     nyha = level,
+#     sex,
+#     lvef = round(rnorm(n = n, mean = 50, sd = 10), digits = 0),
+#     crea = round(rnorm(n = n, mean = 1.1, sd = 0.2), digits = 3),
+#     height_cm,
+#     group(x = c("Yes", "No"), prob = c(1, 0), name = "CABG"),
+#     group(x = c("AVR", "MVReplacement"), prob = c(0.7, 0.3), name = "VALVE")
+# )
+# df_sim
 
-n = 1
-df_sim <- r_data_frame(
-    n = n,
-    id,
-    race(x = c("White", "Hispanic", "Black", "Asian"), prob = c(0.8, 0.1, 0.05, 0.05), name = "Race"),
-    age(x = 30:90),
-    nyha = level,
-    sex,
-    lvef = round(rnorm(n = n, mean = 50, sd = 10), digits = 0),
-    crea = round(rnorm(n = n, mean = 1.1, sd = 0.2), digits = 3),
-    height_cm,
-    group(x = c("Yes", "No"), prob = c(1, 0), name = "CABG"),
-    group(x = c("AVR", "MVReplacement"), prob = c(0.7, 0.3), name = "VALVE")
+df_sim <- dplyr::data_frame(
+  crea = rep(seq(0.8, 3, length.out = 45), times = 2),
+  gender = rep(c("Male", "Female"), each = 45)
 )
-df_sim
+df_sim$lvef = 60
+df_sim$age = 75
+df_sim$proc_cabg = TRUE
+df_sim$proc_valve = "AVR"
+df_sim$chf_2w = TRUE
+df_sim$height_cm = 170
+df_sim$weight_kg = 75
 
-df_sim[1:50,] = df_sim[1, ]
-
-df_sim$Age = 31:80
-
-sims <- df_sim %>% group_by(Age) %>% do(
-  calc_sts(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+sims <- df_sim %>% group_by(crea, gender) %>% do(
+  calc_sts(proc_valve = .$proc_valve, 
+           proc_cabg = .$proc_cabg, 
+           age = .$age, 
+           gender = .$gender,
+           chf_2w = .$chf_2w,
+           crea = .$crea,
+           height_cm = .$height_cm,
+           weight_kg = .$weight_kg,
+           lvef = .$lvef)
   #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
 )
 
-sims_long <- tidyr::gather(data = sims, key = category, value = probability, mort:short_los)
+sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
 
-ggplot2::qplot(x = Age, y = probability, color = category, data = sims_long, geom = c("line")) + ggplot2::theme_bw()
+ggplot2::qplot(x = crea, y = probability, facets = ~gender, color = Risk, data = sims_long, geom = c("line")) + ggplot2::theme_bw()
+
+ggplot2::qplot(x = crea, y = probability, facets = ~Risk, color = gender, data = sims_long, geom = c("line")) + ggthemes::theme_stata()
 ```
 
 
@@ -86,15 +117,6 @@ Risk model is simpler and coefficients are published in [XYZ et al., 20XX](http:
 
 Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
 
-## Pandoc tester
-```{r,warning=FALSE,message=FALSE}
-pander::Pandoc.brew(text = "This is a test: <%= runif(10)%>")
-pander::Pandoc.brew(text = "This is a test: <%= as.list(runif(10))%>")
-pander::Pandoc.brew(text = "This is a test: \n\n<%= mtcars[1:3, ]%>")
-#pander::Pandoc.brew(text = "This is a test: \n\n<%= plot(1:10)%>")
-pander::Pandoc.brew(text='<%for (i in 1:5) {%>\n Pi has a lot (<%=i%>) of power:<%=pi^i%><%}%>')
-
-```
 
 
 ## Styles
