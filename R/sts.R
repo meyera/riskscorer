@@ -10,8 +10,7 @@ do_sts_request <- function(queryList, verbose = FALSE) {
   } else {
     res <- httr::POST(webservice_url,
                       body = queryList,
-                      encode = "json",
-                      httr::verbose())
+                      encode = "json")
   }
 
   if (verbose) {
