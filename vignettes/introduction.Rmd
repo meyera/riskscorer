@@ -10,10 +10,11 @@ vignette: >
 ---
 
 ```{r setup, results='hide', echo=FALSE}
-library(pander)
-library(printr)
-library(wakefield)
+#library(pander)
+#library(printr)
+#library(wakefield)
 library(dplyr)
+library(riskscorer)
 
 knitr::opts_chunk$set(dev = "CairoPNG")
 
