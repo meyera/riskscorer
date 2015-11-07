@@ -6,7 +6,7 @@ Authors@R: person("Alexander", "Meyer", email = "meyer.alexander@gmail.com",
                   role = c("aut", "cre"))
 Maintainer: Alexander Meyer <meyer.alexander@gmail.com>
 Description: More about what it does (maybe more than one line)
-License: GPL-3
+License: MIT
 LazyData: TRUE
 Imports: dplyr,
     httr,
