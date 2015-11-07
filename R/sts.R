@@ -176,9 +176,8 @@ calc_sts <- function(proc_cabg = NULL,
 
   queryList <- list()
 
-  queryList$age <- ensurer::ensure(age, is.numeric(.), . > 20 , . < 100)
-  queryList$gender <- ensurer::ensure(stringr::str_to_title(gender),
-                                     . %in% c("Male", "Female"))
+  queryList$age <- ensurer::ensure(age, is.numeric(.), . >= 1 , . <= 110)
+  queryList$gender <- parse_sex(gender)
 
   if (!is.null(proc_cabg)) {
     if (parse_bool(proc_cabg)) {

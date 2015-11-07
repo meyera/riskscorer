@@ -27,10 +27,10 @@ The package riskscorer is an attempt to provide an easy interface to clinical ri
 
 ## Generating a patient data set
 
-```{r data-sim}
+```{r data-sim, cache=TRUE}
 library(dplyr)
 
-n = 2
+n = 1
 df_sim <- r_data_frame(
     n = n,
     id,
@@ -41,14 +41,23 @@ df_sim <- r_data_frame(
     lvef = round(rnorm(n = n, mean = 50, sd = 10), digits = 0),
     crea = round(rnorm(n = n, mean = 1.1, sd = 0.2), digits = 3),
     height_cm,
-    group(x = c("Yes", "No"), prob = c(0.7, 0.3), name = "CABG"),
-    group(x = c("Yes", "No"), prob = c(0.3, 0.7), name = "AKE")
+    group(x = c("Yes", "No"), prob = c(1, 0), name = "CABG"),
+    group(x = c("AVR", "MVReplacement"), prob = c(0.7, 0.3), name = "VALVE")
 )
 df_sim
 
-df_sim %>% do(
-  calc_sts(proc_valve = .$AKE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+df_sim[1:50,] = df_sim[1, ]
+
+df_sim$Age = 31:80
+
+sims <- df_sim %>% group_by(Age) %>% do(
+  calc_sts(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+  #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
 )
+
+sims_long <- tidyr::gather(data = sims, key = category, value = probability, mort:short_los)
+
+ggplot2::qplot(x = Age, y = probability, color = category, data = sims_long, geom = c("line")) + ggplot2::theme_bw()
 ```
 
 
