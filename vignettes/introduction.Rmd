@@ -9,14 +9,21 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, results='hide', echo=FALSE}
+```{r setup, results='hide', echo=FALSE, cache=TRUE, cache.vars=TRUE}
 #library(pander)
 #library(printr)
 #library(wakefield)
-library(dplyr)
-library(riskscorer)
+suppressPackageStartupMessages(suppressMessages(suppressWarnings({
+  library(dplyr)
+  library(ggplot2)
+  library(riskscorer)
+  library(wakefield)
+})))
 
-knitr::opts_chunk$set(dev = "CairoPNG")
+knitr::opts_chunk$set(dev = "CairoPNG",
+                      fig.width = 7,
+                      fig.height = 6,
+                      echo = FALSE)
 
 ```
 
@@ -33,17 +40,18 @@ The programatical interface can be used in various scenarios:
 * Data pre-processing before analysis.
 * Usage of the webservice for rapid batch processing of a data pool
 
-Figure 1 shows a simulated data set. Except age and sex, all covariates are fixed.
-  > **Crea: 0.8 - 3.0 mg/dL**
-  > **Sex: Male or Female**
-  > Procedure: CABG+AVR
-  > Weight: 75 kg
-  > Height: 170 cm
-  > Symptoms of heart failure
-  > Age: 75
-  > LVEF: 60 %
+Figure 1 shows a simulated data set. Except crea and sex, all covariates are fixed.
+
+> **Crea: 0.8 - 3.0 mg/dL**
+**Sex: Male or Female**
+Procedure: CABG+AVR
+Weight: 75 kg
+Height: 170 cm
+Symptoms of heart failure
+Age: 75
+LVEF: 60 %
   
-```{r data-sim, cache=TRUE}
+```{r data-sim-1, cache=TRUE}
 # n = 1
 # df_sim <- r_data_frame(
 #     n = n,
@@ -59,10 +67,10 @@ Figure 1 shows a simulated data set. Except age and sex, all covariates are fixe
 #     group(x = c("AVR", "MVReplacement"), prob = c(0.7, 0.3), name = "VALVE")
 # )
 # df_sim
-
+n = 23
 df_sim <- dplyr::data_frame(
-  crea = rep(seq(0.8, 3, length.out = 45), times = 2),
-  gender = rep(c("Male", "Female"), each = 45)
+  crea = rep(seq(0.8, 3, length.out = n), times = 2),
+  gender = rep(c("Male", "Female"), each = n)
 )
 df_sim$lvef = 60
 df_sim$age = 75
@@ -87,24 +95,77 @@ sims <- df_sim %>% group_by(crea, gender) %>% do(
 
 sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
 
-ggplot2::qplot(x = crea, y = probability, facets = ~gender, color = Risk, data = sims_long, geom = c("line")) + ggplot2::theme_bw()
+qplot(x = crea, y = probability, facets = ~gender, color = Risk, data = sims_long, geom = c("line")) + theme_bw()
 
-ggplot2::qplot(x = crea, y = probability, facets = ~Risk, color = gender, data = sims_long, geom = c("line")) + ggthemes::theme_stata()
+qplot(x = crea, y = probability, facets = ~Risk, color = gender, data = sims_long, geom = c("line")) + theme_bw()
 ```
 
+Table 1 / Figure 2 - batch processed clusters of a cohort of typical TAVI and CABG patients
+```{r data-sim-2, cache=TRUE}
+
+set.seed(5)
+n = 4
+df_sim_tavi <- r_data_frame(
+    n = n,
+    age(x = 78:100),
+    sex,
+    lvef = round(rnorm(n = n, mean = 50, sd = 10), digits = 0),
+    crea = round(rnorm(n = n, mean = 1.2, sd = 0.2), digits = 3),
+    valid(name = "chf_2w", prob = c(0.1,0.9))
+)
+df_sim_tavi$Patient = 1:(nrow(df_sim_tavi))
+df_sim_tavi$CABG = FALSE
+df_sim_tavi$VALVE = "AVR"
+
+df_sim_cabg <- r_data_frame(
+    n = n,
+    age(x = 40:70),
+    sex,
+    lvef = round(rnorm(n = n, mean = 50, sd = 10), digits = 0),
+    crea = round(rnorm(n = n, mean = 0.8, sd = 0.1), digits = 3),
+    valid(name = "chf_2w", prob = c(0.8,0.2))
+)
+df_sim_cabg$Patient = (nrow(df_sim_tavi)+1):(nrow(df_sim_tavi) + nrow(df_sim_cabg))
+df_sim_cabg$CABG = TRUE
+df_sim_cabg$VALVE = FALSE
+
+sims <- rbind(df_sim_cabg, df_sim_tavi) %>% group_by(Patient) %>% do(
+  calc_sts(proc_valve = .$VALVE, 
+           proc_cabg = .$CABG, 
+           age = .$Age, 
+           gender = .$Sex,
+           chf_2w = .$chf_2w,
+           crea = .$crea,
+           lvef = .$lvef)
+  #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+)
+
+tab_view <- sims %>% 
+  dplyr::rename(STS_Risk_Model = Procedure) %>% 
+  dplyr::arrange(Patient, Mortality)
+
+knitr::kable(tab_view)
+
+radial_plot(sims %>% dplyr::select(-Short_LOS, -Procedure) %>% dplyr::rename(group = Patient) %>% as.data.frame,
+                 grid.min = 0, grid.max = 0.3,legend.title = "Patient",
+                 plot.extent.x = 2.0, label.gridline.min = FALSE,
+                 label.centre.y = FALSE, centre.y = -0.1,
+                 grid.line.width = 0.1
+                 )
+
+```
 
 ## STS Score Implemtation
 
-Describe approach of accessing http://riskcalc.sts.org/stswebriskcalc/v1/calculate/stsall
-via an json interface and fuzzy argument matching and translation for easy usage.
+**@todo**
 
-Works well witg pipes.
-
-Show a generated figure
-
-Talk about Terms of usage
-
-Present web service posibbility with plumber --> potential for automatation of risk score calculation for databases/PDMS systems
+* Describe approach of accessing http://riskcalc.sts.org/stswebriskcalc/v1/calculate/stsall 
+  via an json interface and fuzzy argument matching and translation for easy usage.
+* Works well witg pipes.
+* Show a generated figure
+* Discuss terms of use of STS web calculator and implications for the programmatical interface
+* Present web service posibbility with plumber:
+  potential for automatation of risk score calculation for databases/PDMS systems
 
 ## ES I and ES II implementation
 
@@ -113,47 +174,3 @@ Terms and conditions disalllow usage or reverse engenierring.
 Risk model is simpler and coefficients are published in [XYZ et al., 20XX](http://citation)
 - ES I
 - ES II 
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
-```
-
-You can enable figure captions by `fig_caption: yes` in YAML:
-
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
-```
-
-Also a quote using `>`:
-
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))

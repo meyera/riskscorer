@@ -8,7 +8,8 @@ Maintainer: Alexander Meyer <meyer.alexander@gmail.com>
 Description: More about what it does (maybe more than one line)
 License: MIT
 LazyData: TRUE
-Imports: dplyr,
+Imports:
+    dplyr,
     httr,
     jsonlite,
     purrr,
@@ -17,7 +18,9 @@ Imports: dplyr,
     stringr,
     car,
     readr
-Suggests: testthat,
+Suggests:
+    testthat,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+RoxygenNote: 5.0.0
