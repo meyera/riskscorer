@@ -189,7 +189,6 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #' @return a list of the predicted risks of the at the time of request current
 #'         STS risk model
 #' @export
-#'
 #' @examples
 #'  service <- plumber::plumb("R/sts.R")
 #'  service$run(port = 8080)
@@ -251,9 +250,11 @@ calc_sts <- function(proc_cabg = NULL,
       queryList$opvalve <- "Yes"
       queryList$vsmv <- "Yes, planned"
       queryList$vsmvpr <- "Repair"
+    } else if (proc_valve %in% c("none","no", "n", "false", "f", "0")) {
+      # do nothing, coding indicates no VALVE surgery
     } else {
       stop("'proc_valve' must be one of the following values: 'AVR',
-           'MVReplacement', 'MVRepair'")
+           'MVReplacement', 'MVRepair' or a boolean NO/FALSE string")
     }
   }
 
