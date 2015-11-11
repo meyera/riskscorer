@@ -1,7 +1,7 @@
 library(testthat)
 library(riskscorer)
 
-context("Case Checking")
+context("STS Case Checking")
 
 test_that("Case 1 gets correctly calculated (see PDF)", {
   sts_res <- calc_sts(proc_cabg = TRUE,

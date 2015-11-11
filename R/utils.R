@@ -19,6 +19,8 @@ parse_bool_and_add <- function(x, additionals = NULL, return_val_true = "Yes", r
   }
 }
 
+# parses a string into two defined sex values
+# returns either "Female" or "Male
 parse_sex <- function(x,
                       male_numeric_code = 1,
                       female_numeric_code = 0,
@@ -45,7 +47,44 @@ parse_sex <- function(x,
 }
 
 
+#' Calculates the eGFR
+#'
+#' Uses Cockroft-Gault formula
+#'
+#' @param crea Plasma Creatinin in mg/dL (1 mg/dL = 88.4 umol/L)
+#' @param weight weight in kg
+#' @param age age in years
+#' @param sex Gender of the patient, should be "Male" or "Female", 'F' or 'M',
+#'            plus in addition
+#'             all boolean FALSE strings --> Male
+#'             all boolean TRUE strings --> Female
+#'
+#' @return the calculated eGFR
+#' @export
+cc_eGFR = function(crea,
+                   weight,
+                   age,
+                   sex,
+                   digits_round = 0) {
 
+  # ensure types
+  weight <- ensurer::ensure(weight, is.numeric(.), . >= 10 , . <= 250)
+  age <- ensurer::ensure(age, is.numeric(.), . >= 18 , . <= 95)
+  crea <- ensurer::ensure(crea, is.numeric(.), . >= 0.1 , . <= 20)
+  sex <- parse_sex(sex)
+  digits_round <- ensurer::ensure(digits_round, is.numeric(.), . %in% 0:100)
+
+  # convert crea to umol/L
+  crea <- crea * 88.4
+
+  sex_coef<- 1
+  if (sex == "Female")
+    sex_coef<- 0.85
+
+  egfr <- (140 - age) * weight * sex_coef / (crea * 0.8136)
+
+  round(egfr, digits = digits_round)
+}
 
 # Input data
 # plot.data - dataframe comprising one row per group (cluster); col1 = group name; cols 2-n = variable values

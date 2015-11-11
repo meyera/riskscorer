@@ -1,6 +1,25 @@
 library(testthat)
 library(riskscorer)
 
+context("Checking eGFR calculation")
+test_that("eGFR gets correctly calculated", {
+  expect_equal(90, cc_eGFR(1, weight = 80, age = 45, sex = "Female"))
+  expect_equal(47, cc_eGFR(1, weight = 80, age = 90, sex = "f"))
+  expect_equal(47, cc_eGFR(1, weight = 80, age = 90, sex = "Female"))
+  expect_equal(56, cc_eGFR(1, weight = 80, age = 90, sex = "m"))
+  expect_equal(38, cc_eGFR(1, weight = 55, age = 90, sex = "m"))
+
+  expect_error(cc_eGFR(-1, weight = 55, age = 90, sex = "m"))
+  expect_error(cc_eGFR(21, weight = 55, age = 90, sex = "m"))
+  expect_error(cc_eGFR(1, weight = 55, age = 100, sex = "m"))
+  expect_error(cc_eGFR(5, weight = 55, age = 100, sex = "MALE_"))
+  expect_error(cc_eGFR(5, weight = 5, age = 100, sex = "MALE"))
+  expect_error(cc_eGFR(5, weight = 5, age = 100, sex = "MALE"))
+  expect_error(cc_eGFR(5, weight = "F", age = 100, sex = "MALE"))
+  expect_error(cc_eGFR(5, weight = "F", age = 100, sex = "MALE", digits_round = 4))
+  expect_error(cc_eGFR(1, weight = 50, age = 50, sex = "MALE", digits_round = 4.1))
+})
+
 context("Checking boolean parsing")
 
 test_that("Boolean strings return TRUE", {
