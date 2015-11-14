@@ -1,5 +1,5 @@
 ---
-title: "Introduction to riskscorer"
+title: "Introduction to _riskscorer_"
 author: "Alexander Meyer"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -18,62 +18,154 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(ggplot2)
   library(riskscorer)
   library(wakefield)
+  library(threejs)
 })))
 
 knitr::opts_chunk$set(dev = "CairoPNG",
-                      fig.width = 7,
-                      fig.height = 6,
+                      fig.width = 6,
+                      fig.height = 5,
                       echo = FALSE)
 
 ```
 
 
-The package *riskscorer* is an attempt to provide an easy programatical interface to clinical risk models. It supports fuzzy argument matching and is webservice ready via [plumber](http://plumber.trestletech.com/) decoration.
+The package *riskscorer* is an attempt to provide an easy programatical interface to clinical risk models. It supports robust fuzzy argument matching and is webservice ready via [plumber](http://plumber.trestletech.com/) decoration.
 A the moment only operative risk scores in cardiac surgery are implemented:
 
 * [STS Score](http://riskcalc.sts.org/)
 * [EuroScore I](http://www.euroscore.org)
 * [EuroScore II](http://www.euroscore.org)
+* [German AV Score](http://doi.org/10.1093/ejcts/ezt114)
 
-The programatical interface can be used in various scenarios:
-* Simulation research based on a risk score model (see Figure 1)
-* Data pre-processing before analysis.
-* Usage of the webservice for rapid batch processing of a data pool
+The programmatical interface can be used in various scenarios:
 
-Figure 1 shows a simulated data set. Except crea and sex, all covariates are fixed.
+1. Simulation research based on a risk score model (see Figure 1)
+1. Comparison of risk models
+1. Data pre-processing and acurate risk score gathering before analysis. (saves work at data entry stage and thus avoids errors)
+1. Usage of the webservice for rapid batch processing of a data pool
 
-> **Crea: 0.8 - 3.0 mg/dL**
-**Sex: Male or Female**
-Procedure: CABG+AVR
-Weight: 75 kg
-Height: 170 cm
-Symptoms of heart failure
-Age: 75
-LVEF: 60 %
+### Example 1: Simulated patient data. Except crea and sex, all covariates are fixed.
+
+The simulated patients have the following characteristics:
+
+* __Crea: 0.8 - 3.0 mg/dL__
+* __Sex: Male or Female__
+* Procedure: CABG+AVR
+* Weight: 75 kg
+* Height: 170 cm
+* Symptoms of heart failure
+* Age: 75
+* LVEF: 60 %
+
+The graphs plot the probability of each risk category against the variable creatinine value.
   
-```{r data-sim-1, cache=TRUE}
-# n = 1
-# df_sim <- r_data_frame(
-#     n = n,
-#     id,
-#     race(x = c("White", "Hispanic", "Black", "Asian"), prob = c(0.8, 0.1, 0.05, 0.05), name = "Race"),
-#     age(x = 50:90),
-#     nyha = level,
-#     sex,
-#     lvef = round(rnorm(n = n, mean = 50, sd = 10), digits = 0),
-#     crea = round(rnorm(n = n, mean = 1.1, sd = 0.2), digits = 3),
-#     height_cm,
-#     group(x = c("Yes", "No"), prob = c(1, 0), name = "CABG"),
-#     group(x = c("AVR", "MVReplacement"), prob = c(0.7, 0.3), name = "VALVE")
-# )
-# df_sim
-n = 23
-df_sim <- dplyr::data_frame(
-  crea = rep(seq(0.8, 3, length.out = n), times = 2),
-  gender = rep(c("Male", "Female"), each = n)
-)
-df_sim$lvef = 60
+```{r data-sim-3d, cache=TRUE}
+n = 20#23
+
+grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
+            lvef = rep(seq(10, 60, length.out = n)),
+            gender = c("Male", "Female"))
+
+df_sim <- grid_df %>% as.data.frame %>% as.tbl
+
 df_sim$age = 75
+df_sim$proc_cabg = TRUE
+df_sim$proc_valve = "AVR"
+df_sim$chf_2w = TRUE
+df_sim$height_cm = 170
+df_sim$weight_kg = 75
+
+sims <- df_sim %>% group_by(lvef, crea, gender) %>% do(
+  calc_sts(proc_valve = .$proc_valve, 
+           proc_cabg = .$proc_cabg, 
+           age = .$age, 
+           gender = .$gender,
+           chf_2w = .$chf_2w,
+           crea = .$crea,
+           height_cm = .$height_cm,
+           weight_kg = .$weight_kg,
+           lvef = .$lvef)
+  #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+)
+
+sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
+
+prom <- sims_long %>% dplyr::filter(Risk == "Mortality")
+threejs::scatterplot3js(y = prom$crea, x= prom$lvef, z = prom$probability,
+                        color = ifelse(prom$gender == "Male", "lightblue", "red"),
+                        grid ="TRUE",
+                        labels=sprintf("Sex=%s, Crea=%.2f mg/dL, LVEF=%.2f %%, PROM=%.2f %%", 
+                                       prom$gender,
+                                       prom$crea, 
+                                       prom$lvef, 
+                                       prom$probability*100),
+                        renderer = "canvas")
+
+# plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability)
+# plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability,
+#                   phi = 40, theta = 70)
+# plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability,
+#                   phi = 0, theta = 70)
+# plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability,
+#                   phi = -20, theta = 70)
+# plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability,
+#                   phi = -30, theta = 70)
+
+
+# prom_gen <- prom %>% dplyr::filter(gender == "Female")
+# plot3D::scatter3D(y = prom_gen$crea, x= prom_gen$lvef, z = prom_gen$probability,
+#                   theta = 50, phi = 10, ticktype = "detailed", bty = "f",
+#                   zlim = c(0, 0.1), d=2, pch=1,
+#                   main ="STS Scores",
+#                   xlab = "LVEF [%]",
+#                   ylab = "Crea [mg/dL]",
+#                   zlab = "STS PROM %",
+#                   clab = "STS PROM %")
+# prom_gen <- prom %>% dplyr::filter(gender == "Male")
+# plot3D::scatter3D(y = prom_gen$crea, x= prom_gen$lvef, z = prom_gen$probability,
+#                   theta = 50, phi = 10, pch = 16, add = TRUE, colkey = FALSE)
+
+# library(ggplot2)
+# ggplot(prom, aes(x = lvef, y = crea, z = probability, fill = probability)) +
+#   facet_wrap(~ gender) + 
+#   geom_raster() +
+#   scale_fill_gradient("STS PROM %", low = "red", high = "yellow") + 
+#   geom_contour(color = "black", bins = 20) + 
+#   labs(x = "LVEF [%]", y = "Crea [mg/dL]") +
+#   theme_minimal()
+# 
+# 
+# library(lattice)
+# lattice::wireframe(probability ~ lvef + crea, data = prom,
+#                    groups = gender,
+#                    drape = TRUE,
+#                    colorkey = TRUE,
+#                    shade = FALSE,
+#                    xlab = "LVEF [%]",
+#                    ylab = "Crea [mg/dL]",
+#                    zlab = "STS PROM %")
+# 
+# scatterplot3d::scatterplot3d(y = prom$crea,
+#                              x= prom$lvef, 
+#                              z = prom$probability, 
+#                              #highlight.3d=TRUE, 
+#                              grid = TRUE, pch=16,
+#                              box = FALSE,#type = "l",
+#                              color = ifelse(prom$gender == "Male", "blue", "red"))
+```
+
+
+### Example 2: Simulated patient data. Except crea, levef and sex, all covariates are fixed.
+```{r data-sim-1, cache=TRUE}
+n = 5#23
+
+grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
+            gender = c("Male", "Female"))
+
+df_sim <- grid_df %>% as.data.frame %>% as.tbl
+
+df_sim$age = 75
+df_sim$lvef = 45
 df_sim$proc_cabg = TRUE
 df_sim$proc_valve = "AVR"
 df_sim$chf_2w = TRUE
@@ -100,8 +192,10 @@ qplot(x = crea, y = probability, facets = ~gender, color = Risk, data = sims_lon
 qplot(x = crea, y = probability, facets = ~Risk, color = gender, data = sims_long, geom = c("line")) + theme_bw()
 ```
 
-Table 1 / Figure 2 - batch processed clusters of a cohort of typical TAVI and CABG patients
-```{r data-sim-2, cache=TRUE}
+### Example 3: batch processed clusters of a two cohorts of typical TAVI and typical CABG only patients
+
+
+```{r data-sim-2, cache=TRUE,fig.width=7,fig.height=5}
 
 set.seed(5)
 n = 4
@@ -144,20 +238,40 @@ tab_view <- sims %>%
   dplyr::rename(STS_Risk_Model = Procedure) %>% 
   dplyr::arrange(Patient, Mortality)
 
-knitr::kable(tab_view)
+knitr::kable(tab_view %>% dplyr::select(Patient, 
+                                        Risk_Model = STS_Risk_Model,
+                                        Mort = Mortality, 
+                                        Mort_Morb = Morbidity_Mortality ,
+                                        Stroke = Perm_Stroke, 
+                                        Long_Vent = Prolong_Vent, 
+                                        ReOP=Reoperation,
+                                        Renal_failure,
+                                        DSW_Infect=DSW_Infection,
+                                        Long_LOS))
+
+
+
+# library(dendextend)
+# km <- kmeans(dplyr::select(tab_view, -Patient, -STS_Risk_Model) %>% dist, centers = 2)
+# km
+# dend <- dplyr::select(tab_view, -Patient, -STS_Risk_Model) %>% dist(method = "maximum") %>% hclust(method = "average") %>% as.dendrogram
+# dend %>% set("branches_k_color") %>% plot
+# dend %>% set("branches_k_color") %>% rect.dendrogram(k=2, border = 8, lty = 5, lwd = 2) %>% plot
+
 
 radial_plot(sims %>% dplyr::select(-Short_LOS, -Procedure) %>% dplyr::rename(group = Patient) %>% as.data.frame,
                  grid.min = 0, grid.max = 0.3,legend.title = "Patient",
-                 plot.extent.x = 2.0, label.gridline.min = FALSE,
+                 plot.extent.x = 1.7, plot.extent.y = 1.2,
                  label.centre.y = FALSE, centre.y = -0.1,
-                 grid.line.width = 0.1
+                 group.line.width  = 0.1,
+                 group.point.size = 2,
                  )
 
 ```
 
 ## STS Score Implemtation
 
-**@todo**
+**Documentation TODO**
 
 * Describe approach of accessing http://riskcalc.sts.org/stswebriskcalc/v1/calculate/stsall 
   via an json interface and fuzzy argument matching and translation for easy usage.
@@ -169,8 +283,49 @@ radial_plot(sims %>% dplyr::select(-Short_LOS, -Procedure) %>% dplyr::rename(gro
 
 ## ES I and ES II implementation
 
-Terms and conditions disalllow usage or reverse engenierring.
+**Documentation TODO**
 
-Risk model is simpler and coefficients are published in [XYZ et al., 20XX](http://citation)
+Terms and conditions prohibit the use for batch processing or reverse engenierring. However, the risk model is simple and coefficients of the logistic model are published in [XYZ et al., 20XX](http://citation). Therefor one can easily use the published coefficients and impose a robust R interface over the model. 
 - ES I
 - ES II 
+
+
+### ES II examples
+
+
+
+## German Aortic Valve Score
+```{r}
+n = 500#23
+
+grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
+            lvef = rep(seq(10, 60, length.out = n)),
+            gender = c("Male", "Female"))
+
+df_sim <- grid_df %>% as.data.frame %>% as.tbl
+
+df_sim$age = 75
+df_sim$proc_cabg = TRUE
+df_sim$proc_valve = "AVR"
+df_sim$chf_2w = TRUE
+df_sim$height_cm = 170
+df_sim$weight_kg = 75
+
+sims <- df_sim %>% group_by(lvef, crea, gender) %>% do(
+#  es_II()
+  #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+)
+
+sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
+
+prom <- sims_long %>% dplyr::filter(Risk == "Mortality")
+threejs::scatterplot3js(y = prom$crea, x= prom$lvef, z = prom$probability)
+
+plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability)
+
+lattice::wireframe(probability ~ lvef + crea, data = prom, drape = TRUE, colorkey = TRUE)
+
+plot3D::surf3D(y = prom$crea, x= prom$lvef, z = prom$probability)
+```
+
+### GAVS Examples
