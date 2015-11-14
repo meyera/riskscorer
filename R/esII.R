@@ -168,6 +168,23 @@ es_II <- function(NYHA = NULL,
   return(round(pred_mort, digits = 4))
 }
 
+#' Calculates the EuroScore II
+#'
+#' Citation:
+#'
+#' Fuzzy matching
+#'
+#' @param age
+#' @param female
+#' @param renal_impairment
+#' @param crea
+#' @param extracardiac_arteriopathy
+#' @param poor_mobiltiy
+#'
+#' @return
+#' @export
+#'
+#' @examples
 calc_esII <- function(age,
                       female = NULL,
                       renal_impairment = NULL,
