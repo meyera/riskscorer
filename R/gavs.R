@@ -83,6 +83,10 @@ gavs <- function(age_grp = NULL,
 #' @export
 #'
 #' @examples
+#
+#  Plumber decoration
+#* @get /calc_gavs
+#* @post /calc_gavs
 calc_gavs <- function(age = NULL,
                       sex = NULL,
                       weight_kg = NULL,

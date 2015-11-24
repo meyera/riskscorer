@@ -185,6 +185,10 @@ es_II <- function(NYHA = NULL,
 #' @export
 #'
 #' @examples
+#
+# Plumber decoration
+#* @get /calc_esII
+#* @post /calc_esII
 calc_esII <- function(age,
                       female = NULL,
                       renal_impairment = NULL,
