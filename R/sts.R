@@ -213,9 +213,28 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #'                      which includes the institution of anesthetic management.
 #'                      Capture resuscitation timeframe: within 1 hour or 1-24 hours pre-op.
 #'                      Allowed values:
-#'                        - "yes_1h"
-#'                        - "yes_1-24h"
+#'                        - "yes-1h"
+#'                        - "yes-1_24h"
 #'                        - "no"
+#'
+#' @param cardiogenic_shock Indicate if the patient developed cardiogenic shock.
+#'                          Cardiogenic shock is defined as a sustained (>30 min)
+#'                          episode of hypoperfusion evidenced by systolic blood
+#'                          pressure <90 mm Hg and/or, if available,
+#'                          cardiac index <2.2 L/min per square meter determined to
+#'                          be secondary to cardiac dysfunction and/or the requirement
+#'                          for parenteral inotropic or vasopressor agents or
+#'                          mechanical support (e.g., IABP, extracorporeal circulation, VADs)
+#'                          to maintain blood pressure and cardiac index above those
+#'                          specified levels. Note: Transient episodes of hypotension
+#'                          reversed with IV fluid or atropine do not constitute
+#'                          cardiogenic shock. The hemodynamic compromise
+#'                          (with or without extraordinary supportive therapy) must persist
+#'                          for at least 30 min. ACCF/AHA 2013
+#'                          Accepted values:
+#'                            - Boolean NO strings
+#'                            - "yes-at_procedure"
+#'                            - "yes-within_24h"
 #'
 #' @return a list of the predicted risks of the at the time of request current
 #'         STS risk model
@@ -257,6 +276,8 @@ calc_sts <- function(age,
                      chd = NULL,
                      left_main_stenosis = NULL,
                      urgency = NULL,
+                     resuscitation = NULL,
+                     cardiogenic_shock = NULL,
                      verbose = FALSE
                      ) {
 
@@ -540,9 +561,38 @@ calc_sts <- function(age,
       queryList$status <- "Emergent"
     } else if (urgency %in% c("emergent salvage", "salvage")) {
       queryList$status <- "Emergent Salvage"
+    } else {
+      stop("Coding of 'urgency' not recognized.")
     }
   }
 
+  if (!is.null(resuscitation)) {
+    resusc <- stringr::str_trim(stringr::str_to_lower(resuscitation))
+
+    if (resusc %in% c("none","no", "n", "false", "f", "0")) {
+      queryList$resusc <- "No"
+    } else if (resusc == "yes-1h") {
+      queryList$resusc <- "Yes - Within 1 hour of the start of the procedure"
+    } else if (resusc == "yes-1_24h") {
+    queryList$resusc <- "Yes - More than 1 hour but less than 24 hours of the start of the procedure"
+    } else {
+      stop("Coding of 'resuscitation' not recognized.")
+    }
+  }
+
+  if (!is.null(cardiogenic_shock)) {
+    carshock <- stringr::str_trim(stringr::str_to_lower(cardiogenic_shock))
+
+    if (carshock %in% c("none","no", "n", "false", "f", "0")) {
+      queryList$carshock <- "No"
+    } else if (carshock == "yes-at_procedure") {
+      queryList$carshock <- "Yes - At the time of the procedure"
+    } else if (carshock == "yes-within_24h") {
+      queryList$carshock <- "Yes, not at the time of the procedure but within prior 24 hours"
+    } else {
+      stop("Coding of 'cardiogenic_shock' not recognized.")
+    }
+  }
 
   # todo
 
