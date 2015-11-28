@@ -20,6 +20,43 @@ test_that("eGFR gets correctly calculated", {
   expect_error(cc_eGFR(1, weight = 50, age = 50, sex = "MALE", digits_round = 4.1))
 })
 
+context("Checking CHD parsing")
+test_that("CHD gets correctly translated into STS nomenclature", {
+  expect_equal("One", parseVesselsDisease("KHK-1"))
+  expect_equal("One", parseVesselsDisease("KHK1"))
+  expect_equal("One", parseVesselsDisease("1KHK"))
+  expect_equal("One", parseVesselsDisease("1khK"))
+  expect_equal("One", parseVesselsDisease("1-khK"))
+  expect_equal("Three", parseVesselsDisease("KHK-3"))
+  expect_equal("Two", parseVesselsDisease("ChdII"))
+  expect_equal("Three", parseVesselsDisease("3CHD"))
+  expect_equal("Three", parseVesselsDisease("3chd"))
+  expect_equal("Three", parseVesselsDisease("III-CHD"))
+  expect_equal("One", parseVesselsDisease("KHK-I"))
+  expect_equal("One", parseVesselsDisease("KHK 1"))
+  expect_equal("Two", parseVesselsDisease("II KHK"))
+  expect_equal("One", parseVesselsDisease("1 khK"))
+  expect_equal("One", parseVesselsDisease("1 khK"))
+  expect_equal("Three", parseVesselsDisease("vessel 3"))
+  expect_equal("Three", parseVesselsDisease("Vessels III"))
+  expect_equal("Three", parseVesselsDisease("3vessel"))
+
+  expect_equal("None", parseVesselsDisease(0))
+  expect_equal("None", parseVesselsDisease(FALSE))
+  expect_equal("None", parseVesselsDisease(F))
+  expect_equal("None", parseVesselsDisease("Nein"))
+  expect_equal("None", parseVesselsDisease("n"))
+  expect_equal("None", parseVesselsDisease("no"))
+  expect_equal("None", parseVesselsDisease("NOne"))
+
+  expect_null(parseVesselsDisease("3 CHHD"))
+  expect_null(parseVesselsDisease("4 CHD"))
+  expect_null(parseVesselsDisease("EinsKHK"))
+  expect_null(parseVesselsDisease(""))
+  expect_null(parseVesselsDisease(NA))
+  expect_null(parseVesselsDisease(NULL))
+})
+
 context("Checking boolean parsing")
 
 test_that("Boolean strings return TRUE", {

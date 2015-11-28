@@ -46,6 +46,56 @@ parse_sex <- function(x,
   x
 }
 
+#' Parses a CHD string containing common names of CHD types and translates them
+#' to the STS coding => {"None", "One", "Two", "Three"}
+#'
+#' Returns NULL if string cannot be parsed into a CHD value
+#'
+#' @param chd the chd string, will be automatically be lowercase transformed,
+#'            examples: "KHK1", "KHK-1",
+#'            "CHD-1", "CHD1", "1-KHK", "1-vessel", "One vessels", "Eins", "One", "KHK-I",
+#'            "II-khk", "II-CHD, "I vessel" or
+#'            "None" strings: ("none", "no", "n", "nein", "0", "f", "false")
+#'
+#'
+parseVesselsDisease <- function(chd) {
+  if (is.null(chd)) return(NULL)
+
+  chd <- stringr::str_to_lower(as.character(chd))
+
+  # check None values:
+  if (chd %in% c("none", "no", "n", "nein", "0", "f", "false")) {
+    return("None")
+  }
+
+  # Numeric Vessel disease number
+  transtab <- c("1" = "One", "2" = "Two", "3" = "Three")
+  res <- stringr::str_match(chd, "(khk|chd|vessels?)-? ?([123])")
+  if (!is.null(res[1,1]) & !is.na(res[1,1])) {
+    return(unname(transtab[res[1,3]]))
+  }
+
+  res <- stringr::str_match(chd, "([123])-? ?(khk|chd|vessels?)")
+  if (!is.null(res[1,1]) & !is.na(res[1,1])) {
+    return(unname(transtab[res[1,2]]))
+  }
+
+  # Roman Numeric Vessel disease number
+  transtab <- c("i" = "One", "ii" = "Two", "iii" = "Three")
+
+  res <- stringr::str_match(chd, "(khk|chd|vessels?)-? ?(i{1,3})")
+  if (!is.null(res[1,1]) & !is.na(res[1,1])) {
+    return(unname(transtab[res[1,3]]))
+  }
+
+  res <- stringr::str_match(chd, "(i{1,3})-? ?(khk|chd|vessels?)")
+  if (!is.null(res[1,1]) & !is.na(res[1,1])) {
+    return(unname(transtab[res[1,2]]))
+  }
+
+  return(NULL)
+}
+
 
 #' Calculates the eGFR
 #'
