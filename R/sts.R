@@ -176,7 +176,7 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #'                     CDC, January 2013 Choose 'Yes' for patients with pre-operative
 #'                     endocarditis who begin antibiotics post-op.
 #'                     Code yes for patients who are diagnosed intraoperatively.
-#'                     Values: "Yes", "No", or booleans string, "Unknown"
+#'                     Values: "Yes", "No", or booleans string
 #'
 #' @param endocarditis_type Type of endocarditis the patient has. If the patient is
 #'                          currently being treated for endocarditis, the disease
@@ -184,7 +184,38 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #'                          If no antibiotic medication (other than prophylactic
 #'                          medication) is being given at the time of surgery,
 #'                          then the infection is considered treated.
-#'                     Values: 'Active' or 'Treated'
+#'
+#'                          If a <i>endocarditis</i> type is set, endocarditis is automatically
+#'                          set to "Yes"
+#'                          Values: 'Active' or 'Treated'
+#'
+#' @param chd_known Indicate whether coronary artery anatomy and/or disease is documented
+#'            and available prior to surgery.
+#'            Values: "Yes", "No", or booleans string
+#'
+#' @param chd Indicate whether coronary artery anatomy and/or disease is documented
+#'            and available prior to
+#'
+#'            If a valid <i>chd</i> type is set, chd_known is automatically
+#'            set to "Yes"
+#'            Values: "Yes", "No", or booleans string
+#'
+#' @param left_main_stenosis Any numeric string between 0 and 100, like "60%" or "45 %"
+#'
+#' @param urgency Indicate the clinical status of the patient prior to entering the operating room.
+#'                Indication urgency, accepts the following values:
+#'                "elective|elektiv", "urgent|dringlich",
+#'                "emergent|emergency|notfall|notfallindikation",
+#'                "salvage|emergent salvage"
+#'
+#' @param resuscitation Indicate whether the patient required cardiopulmonary
+#'                      resuscitation before the start of the operative procedure
+#'                      which includes the institution of anesthetic management.
+#'                      Capture resuscitation timeframe: within 1 hour or 1-24 hours pre-op.
+#'                      Allowed values:
+#'                        - "yes_1h"
+#'                        - "yes_1-24h"
+#'                        - "no"
 #'
 #' @return a list of the predicted risks of the at the time of request current
 #'         STS risk model
@@ -196,10 +227,10 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 # Plumber decoration
 #* @get /calc_sts
 #* @post /calc_sts
-calc_sts <- function(proc_cabg = NULL,
+calc_sts <- function(age,
+                     gender,
+                     proc_cabg = NULL,
                      proc_valve = NULL,
-                     age = NULL,
-                     gender = NULL,
                      height_cm = NULL,
                      weight_kg = NULL,
                      lvef = NULL,
@@ -221,7 +252,12 @@ calc_sts <- function(proc_cabg = NULL,
                      htn = NULL,
                      immsupp = NULL,
                      endocarditis = NULL,
-                     endocarditis_type = NULL
+                     endocarditis_type = NULL,
+                     chd_known = NULL,
+                     chd = NULL,
+                     left_main_stenosis = NULL,
+                     urgency = NULL,
+                     verbose = FALSE
                      ) {
 
   queryList <- list()
@@ -454,8 +490,7 @@ calc_sts <- function(proc_cabg = NULL,
   }
 
   if (!is.null(endocarditis)) {
-    queryList$infendo <- parse_bool_and_add(stringr::str_to_title(endocarditis),
-                                             additionals = "Unknown")
+    queryList$infendo <- parse_bool_and_add(stringr::str_to_title(endocarditis))
   }
 
   if (!is.null(endocarditis_type)) {
@@ -463,18 +498,57 @@ calc_sts <- function(proc_cabg = NULL,
 
     if (endocarditis_type %in% c("ACTIVE", "ACT")) {
       queryList$infendty <- "Active"
+      queryList$infendo <- "Yes"
     } else if (endocarditis_type %in% c("TREATED", "TRT", "TREAT")) {
       queryList$infendty <- "Treated"
+      queryList$infendo <- "Yes"
     } else {
       stop("Coding of 'endocarditis_type' not recognized.")
     }
   }
 
+  if (!is.null(chd_known)) {
+    queryList$coranatdisknown <- parse_bool_and_add(stringr::str_to_title(chd_known))
+  }
+
+  if (!is.null(chd)) {
+    chd <- parseVesselsDisease(chd)
+
+    if (chd %in% c("None", "Three", "Two", "One")) {
+      queryList$numdisv <- chd
+      queryList$coranatdisknown <- "Yes"
+    } else {
+      stop("Coding of 'chd' not recognized.")
+    }
+  }
+
+  if (!is.null(left_main_stenosis) & chd %in% c("Three", "Two", "One")) {
+    stenosis <- readr::parse_number(left_main_stenosis)
+
+    queryList$pctstenlmain <- ensurer::ensure(stenosis, is.numeric(.), . >= 0, . <= 100)
+    queryList$pctstenknown <- "Yes"
+  }
+
+  if (!is.null(urgency)) {
+    urgency <- stringr::str_trim(stringr::str_to_lower(urgency))
+
+    if (urgency %in% c("elective", "elektiv")) {
+      queryList$status <- "Elective"
+    } else if (urgency %in% c("urgent", "dringlich")) {
+      queryList$status <- "Urgent"
+    } else if (urgency %in% c("emergent", "emergency", "notfall", "notfallindikation")) {
+      queryList$status <- "Emergent"
+    } else if (urgency %in% c("emergent salvage", "salvage")) {
+      queryList$status <- "Emergent Salvage"
+    }
+  }
+
+
   # todo
 
   #queryList <- as.list(match.call())[-1]
   #queryList <- purrr::compact(queryList)
-  riskdf <- dplyr::as_data_frame(do_sts_request(queryList, verbose = FALSE))
+  riskdf <- dplyr::as_data_frame(do_sts_request(queryList, verbose = verbose))
 
   dplyr::rename(riskdf,
                 Procedure = proceduretype,
