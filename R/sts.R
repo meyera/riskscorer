@@ -235,6 +235,108 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #'                            - Boolean NO strings
 #'                            - "yes-at_procedure"
 #'                            - "yes-within_24h"
+#' @param iabp Indicate whether the patient was placed on an Intra-Aortic Balloon Pump (IABP).
+#'             Values: "Yes", "No", or booleans string
+#'
+#' @param iabp_when Indicate when the IABP was inserted.
+#'                  Accepted values:
+#'                    - Boolean NO strings --> will set <i>iabp</i> to "No"
+#'                    - "Preop" --> will set <i>iabp</i> to "Yes"
+#'                    - "Intraop" --> will set <i>iabp</i> to "Yes"
+#'                    - "Postop" --> will set <i>iabp</i> to "Yes"
+#'
+#' @param inotropes Indicate whether the patient received IV inotropic agents within
+#'                  48 hours preceding surgery.
+#'                  Values: "Yes", "No", or booleans string
+#'
+#' @param pre_cv_intervention Indicate whether the patient has undergone any previous
+#'                            cardiovascular intervention, either <b>surgical or non-surgical</b>,
+#'                            which may include those done during the current admission.
+#'
+#' @param pre_pci Indicate whether a previous Percutaneous Coronary Intervention (PCI)
+#'                was performed any time prior to this surgical procedure. Percutaneous
+#'                coronary intervention (PCI) is the placement of an angioplasty guide
+#'                wire, balloon, or other device (e.g. stent, atherectomy, brachytherapy,
+#'                or thrombectomy catheter) into a native coronary artery or coronary
+#'                artery bypass graft for the purpose of mechanical coronary revascularization.
+#'                Values: "Yes", "No", or booleans string
+#'                --> will set the value of <i>pre_cv_intervention</i> accordingly
+#'
+#' @param pre_pci_interval Indicate the interval of time between the previous PCI
+#'                and the current surgical procedure.
+#'                Values: ">6h" or "<=6h"
+#'                --> will set the value of <i>pre_cv_intervention</i> and
+#'                    <i>pre_pci</i> accordingly.
+#'
+#' @param vd_mitral Indicate whether Mitral valve disease is present.
+#'                  Values: "Yes", "No", or booleans string
+#'
+#' @param vd_mitral_stenosis Indicate whether Mitral Stenosis is present.
+#'                  Values: "Yes", "No", or booleans string
+#'                  --> A boolean "Yes" value will also set <i>vd_mitral</i> to "Yes"
+#'
+#' @param vd_aortic Indicate whether Aortic valve disease is present.
+#'                  Values: "Yes", "No", or booleans string
+#'
+#' @param vd_aortic_stenosis Indicate whether Aortic Stenosis is present.
+#'                  Values: "Yes", "No", or booleans string
+#'                  --> A boolean "Yes" value will also set <i>vd_aortic</i> to "Yes"
+#'
+#' @param vd_aortic_regurg Indicate whether there is evidence of Aortic valve
+#'                         insufficiency/regurgitation. Enter level of valve function
+#'                         associated with highest risk (i.e., worst performance).
+#'                         Enter the highest level recorded in the chart.
+#'                         'Moderately severe' should be coded as 'Severe'.
+#'                         Values:
+#'                           - "None" or Boolean NO strings
+#'                           - "undocumented" | "not documented"
+#'                           - "trivial/trace"
+#'                           - "mild" | "1+" | "1"
+#'                           - "moderate" | "2+" | "2" | "mittel" | "mittelgradig" | "mittelschwer"
+#'                           - "severe" | "3+" | "3" | "schwer" | "schwergradig"
+#'                            --> Any value >= 1+ will also set <i>vd_aortic</i> to "Yes"
+#'
+#' @param vd_mitral_regurg Indicate whether there is evidence of Mitral valve
+#'                         insufficiency/regurgitation. Enter level of valve function
+#'                         associated with highest risk (i.e., worst performance).
+#'                         Enter the highest level recorded in the chart.
+#'                         'Moderately severe' should be coded as 'Severe'.
+#'                         Values:
+#'                           - "None" or Boolean NO strings
+#'                           - "undocumented" | "not documented"
+#'                           - "trivial/trace"
+#'                           - "mild" | "1+" | "1"
+#'                           - "moderate" | "2+" | "2" | "mittel" | "mittelgradig" | "mittelschwer"
+#'                           - "severe" | "3+" | "3" | "schwer" | "schwergradig"
+#'                            --> Any value >= 1+ will also set <i>vd_aortic</i> to "Yes"
+#'
+#' @param vd_tricuspid_regurg Indicate whether there is evidence of Tricuspid valve
+#'                         insufficiency/regurgitation. Enter level of valve function
+#'                         associated with highest risk (i.e., worst performance).
+#'                         Enter the highest level recorded in the chart.
+#'                         'Moderately severe' should be coded as 'Severe'.
+#'                         Values:
+#'                           - "None" or Boolean NO strings
+#'                           - "undocumented" | "not documented"
+#'                           - "trivial/trace"
+#'                           - "mild" | "1+" | "1"
+#'                           - "moderate" | "2+" | "2" | "mittel" | "mittelgradig" | "mittelschwer"
+#'                           - "severe" | "3+" | "3" | "schwer" | "schwergradig"
+#'                            --> Any value >= 1+ will also set <i>vd_aortic</i> to "Yes"
+#'
+#' @param no_cardiovascular_surgeries Incidence - Indicate if this is the patient's:
+#'                                      - 0 ==> first surgery
+#'                                      - 1 ==> first re-op surgery
+#'                                      - 2 ==> second re-op surgery
+#'                                      - 3 ==> third re-op surgery
+#'                                      - 4 ==> fourth or more re-op surgery.
+#'                                    Surgery is defined as cardiothoracic
+#'                                    operations (heart or great vessels) surgical
+#'                                    procedures performed with or without cardiopulmonary
+#'                                    bypass (CPB). Also include lung procedures
+#'                                    utilizing CPB or tracheal procedures utilizing CPB.
+#'                                    Reoperation increases risk due to the presence of
+#'                                    scar tissue and adhesions.
 #'
 #' @return a list of the predicted risks of the at the time of request current
 #'         STS risk model
@@ -248,7 +350,7 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #* @post /calc_sts
 calc_sts <- function(age,
                      gender,
-                     proc_cabg = NULL,
+                     proc_cabg,
                      proc_valve = NULL,
                      height_cm = NULL,
                      weight_kg = NULL,
@@ -278,6 +380,20 @@ calc_sts <- function(age,
                      urgency = NULL,
                      resuscitation = NULL,
                      cardiogenic_shock = NULL,
+                     iabp = NULL,
+                     iabp_when = NULL,
+                     inotropes = NULL,
+                     pre_cv_intervention = NULL,
+                     pre_pci = NULL,
+                     pre_pci_interval = NULL,
+                     vd_mitral = NULL,
+                     vd_mitral_stenosis = NULL,
+                     vd_aortic = NULL,
+                     vd_aortic_stenosis = NULL,
+                     vd_aortic_regurg = NULL,
+                     vd_mitral_regurg = NULL,
+                     vd_tricuspid_regurg = NULL,
+                     no_cardiovascular_surgeries = NULL,
                      verbose = FALSE
                      ) {
 
@@ -543,7 +659,7 @@ calc_sts <- function(age,
     }
   }
 
-  if (!is.null(left_main_stenosis) & chd %in% c("Three", "Two", "One")) {
+  if (!is.null(left_main_stenosis) && chd %in% c("Three", "Two", "One")) {
     stenosis <- readr::parse_number(left_main_stenosis)
 
     queryList$pctstenlmain <- ensurer::ensure(stenosis, is.numeric(.), . >= 0, . <= 100)
@@ -594,7 +710,82 @@ calc_sts <- function(age,
     }
   }
 
-  # todo
+  if (!is.null(iabp)) {
+    queryList$iabp <- parse_bool_and_add(stringr::str_to_title(iabp))
+  }
+
+  if (!is.null(iabp_when)) {
+    iabp_when <- stringr::str_trim(stringr::str_to_lower(iabp_when))
+
+    if (iabp_when %in% c("none","no", "n", "false", "f", "0")) {
+      queryList$iabp <- "No"
+    } else if (iabp_when == "preop") {
+      queryList$iabp <- "Yes"
+      queryList$iabpwhen <- "Preop"
+    } else if (iabp_when == "intraop") {
+      queryList$iabp <- "Yes"
+      queryList$iabpwhen <- "Intraop"
+    } else if (iabp_when == "postop") {
+      queryList$iabp <- "Yes"
+      queryList$iabpwhen <- "Postop"
+    } else {
+      stop("Coding of 'iabp_when' not recognized.")
+    }
+  }
+
+  if (!is.null(inotropes)) {
+    queryList$medinotr <- parse_bool_and_add(stringr::str_to_title(inotropes))
+  }
+
+  if (!is.null(pre_cv_intervention)) {
+    queryList$prcvint <- parse_bool_and_add(stringr::str_to_title(pre_cv_intervention),
+                                            additionals = "Unknown")
+  }
+
+  if (!is.null(pre_pci)) {
+    queryList$pocpci <- parse_bool_and_add(stringr::str_to_title(inotropes))
+    if (queryList$pocpci == "Yes") {
+      queryList$prcvint <- "Yes"
+    }
+  }
+
+  if (!is.null(pre_pci_interval)) { #">6h" or "<=6h"
+    pre_pci_interval <- stringr::str_trim(stringr::str_to_lower(pre_pci_interval))
+
+     if (pre_pci_interval == ">6h") {
+      queryList$pocpciin <- " > 6 Hours"
+      queryList$prcvint <- "Yes"
+      queryList$pocpci <- "Yes"
+    } else if (pre_pci_interval == "<=6h") {
+      queryList$pocpciin <- " <= 6 Hours"
+      queryList$prcvint <- "Yes"
+      queryList$pocpci <- "Yes"
+    } else {
+      stop("Coding of 'pre_pci_interval' not recognized.")
+    }
+  }
+
+  # if (!is.null(pre_cv_intervention)) {
+  #   queryList$prcvint <- parse_bool_and_add(stringr::str_to_title(pre_cv_intervention))
+  # }
+
+  # if (!is.null(pre_pci)) {
+  #   queryList$pocpci <- parse_bool_and_add(stringr::str_to_title(inotropes))
+  #   if (queryList$pocpci == "Yes") {
+  #     queryList$prcvint <- "Yes"
+  #   }
+  # }
+
+
+
+  # vd_mitral = NULL,
+  # vd_mitral_stenosis = NULL,
+  # vd_aortic = NULL,
+  # vd_aortic_stenosis = NULL,
+  # vd_aortic_regurg = NULL,
+  # vd_mitral_regurg = NULL,
+  # vd_tricuspid_regurg = NULL,
+  # no_cardiovascular_surgeries = NULL,
 
   #queryList <- as.list(match.call())[-1]
   #queryList <- purrr::compact(queryList)
