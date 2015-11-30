@@ -338,6 +338,11 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #'                                    Reoperation increases risk due to the presence of
 #'                                    scar tissue and adhesions.
 #'
+#' @param return_query_list setting this on TRUE will return only the query list, but not
+#'                          do the request to the STS web service. Useful for debugging.
+#'
+#' @param verbose prints detailed info about parameters and the http web service query
+#'
 #' @return a list of the predicted risks of the at the time of request current
 #'         STS risk model
 #' @export
@@ -394,6 +399,7 @@ calc_sts <- function(age,
                      vd_mitral_regurg = NULL,
                      vd_tricuspid_regurg = NULL,
                      no_cardiovascular_surgeries = NULL,
+                     return_query_list = FALSE,
                      verbose = FALSE
                      ) {
 
@@ -828,6 +834,11 @@ calc_sts <- function(age,
 
   #queryList <- as.list(match.call())[-1]
   #queryList <- purrr::compact(queryList)
+
+  if (return_query_list) {
+    return(queryList)
+  }
+
   res <- do_sts_request(queryList, verbose = verbose)
   riskdf <- dplyr::as_data_frame(res)
 
