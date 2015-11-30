@@ -526,14 +526,15 @@ calc_sts <- function(age,
     names(choices) <- stringr::str_to_upper(names(choices))
 
     prior_mi <- stringr::str_to_upper(prior_mi)
+    prior_mi_bool <- parse_bool_and_add(prior_mi)
 
     if (prior_mi %in% names(choices[1:5])) {
       queryList$prevmi <- "Yes"
       queryList$miwhen <- choices[prior_mi]
     } else if (prior_mi %in% names(choices[6:7])) {
       queryList$prevmi <- choices[prior_mi]
-    } else if (prior_mi %in% c("F", "FALSE", "0")) {
-      queryList$prevmi <- "No"
+    } else if (prior_mi_bool %in% c("Yes", "No")) {
+      queryList$prevmi <- prior_mi_bool
     } else {
       stop("Coding if  of 'prior_mi' not recognized.")
     }
@@ -547,7 +548,7 @@ calc_sts <- function(age,
   if (!is.null(afib)) {
     afib <- stringr::str_to_upper(afib)
 
-    if (afib %in% names("NONE","NO", "FALSE", "F", "0")) {
+    if (afib %in% c("NONE","NO", "FALSE", "F", "0")) {
       queryList$arrhythafib <- "None"
     } else if (afib %in% c("PAROXYSMAL", "PAROX")) {
       queryList$arrhythafib <- "Paroxysmal"
@@ -617,6 +618,7 @@ calc_sts <- function(age,
       queryList$diabctrl <- "None"
     } else if (diabetes_ctrl %in% names(choices)) {
       queryList$diabctrl <- choices[diabetes_ctrl]
+      queryList$diabetes <- "Yes"
     } else {
       stop("Coding of 'diabetes_ctrl' not recognized.")
     }
@@ -725,13 +727,15 @@ calc_sts <- function(age,
 
     if (iabp_when %in% c("none","no", "n", "false", "f", "0")) {
       queryList$iabp <- "No"
-    } else if (iabp_when == "preop") {
+    } else if (str_starts_with(iabp_when, "pre") ||
+               str_starts_with(iabp_when, "prae") ||
+               str_starts_with(iabp_when, "prä")) {
       queryList$iabp <- "Yes"
       queryList$iabpwhen <- "Preop"
-    } else if (iabp_when == "intraop") {
+    } else if (str_starts_with(iabp_when, "intra")) {
       queryList$iabp <- "Yes"
       queryList$iabpwhen <- "Intraop"
-    } else if (iabp_when == "postop") {
+    } else if (str_starts_with(iabp_when, "post")) {
       queryList$iabp <- "Yes"
       queryList$iabpwhen <- "Postop"
     } else {
