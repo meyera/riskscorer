@@ -9,6 +9,10 @@ parse_bool <- function(x) {
   readr::parse_logical(x)
 }
 
+str_starts_with <- function(string, pattern) {
+  !is.na(stringr::str_match(string, paste0("^", pattern))[1,1])
+}
+
 parse_bool_and_add <- function(x, additionals = NULL, return_val_true = "Yes", return_val_false = "No") {
   if (!is.null(additionals) && (x %in% additionals)) {
     x

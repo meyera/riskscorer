@@ -20,6 +20,18 @@ test_that("eGFR gets correctly calculated", {
   expect_error(cc_eGFR(1, weight = 50, age = 50, sex = "MALE", digits_round = 4.1))
 })
 
+context("Checking str utility functions")
+test_that("str_starts_with works correctly", {
+  expect_true(str_starts_with("preopertive", "pre"))
+  expect_false(str_starts_with("preopertive", "intra"))
+
+  expect_true(str_starts_with("intraop", "intra"))
+  expect_false(str_starts_with("intraop", "post"))
+  expect_false(str_starts_with("preopertive", "intra"))
+
+  expect_true(str_starts_with("post", "post"))
+  expect_false(str_starts_with("post", "postop"))
+})
 
 context("Checking regurg parsing")
 test_that("Regurgitation classification gets correctly translated into STS nomenclature", {
