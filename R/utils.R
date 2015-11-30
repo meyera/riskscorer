@@ -96,6 +96,66 @@ parseVesselsDisease <- function(chd) {
   return(NULL)
 }
 
+#' Parses regurgitation state to the STS nomenclature
+#'
+#' Function takes a value, converts it to a string and tries to to sensefully
+#' convert it to a STS nomenclature.
+#'
+#' @param regurg_str The following values will be detected:
+#'                     - "None" or Boolean NO strings
+#'                     - "undocumented" | "not documented" | "nicht dokumentiert" | "undokumentiert"
+#'                        | "unbekannt" | "nicht bekannt" | "unknown" | "not known"
+#'                     - "trivial/trace"
+#'                     - "mild" | "1+" | "1"
+#'                     - "moderate" | "2+" | "2" | "mittel" | "mittelgradig" | "mittelschwer"
+#'                     - "severe" | "3+" | "3" | "schwer" | "schwergradig"
+parse_vd_regurg <- function(regurg_str) {
+  regurg_str <- stringr::str_to_lower(stringr::str_trim(regurg_str))
+
+  # dectect no values:
+  if (regurg_str %in% c('0','false','f','no','n', 'none', 'keine', 'nein')) {
+    return("None")
+  }
+
+  # dectect "undocumented values"
+  if (regurg_str %in% c("undocumented", "not documented", "nicht dokumentiert",
+                        "undokumentiert", "unbekannt", "unknown", "not known",
+                        "nicht bekannt")) {
+    return("Not documented")
+  }
+
+  # detect trivial / trace
+  if (regurg_str %in% c("trivial", "trace", "spur")) {
+    return("Trivial/Trace")
+  }
+
+  # detect mild
+  res <- stringr::str_match(regurg_str, "mild|1\\+?")
+  if (!is.na(res[1,1])) {
+    return("Mild")
+  }
+
+  # detect mild
+  res <- stringr::str_match(regurg_str, "mild|1\\+?")
+  if (!is.na(res[1,1])) {
+    return("Moderate")
+  }
+
+  # detect moderate
+  res <- stringr::str_match(regurg_str, "moderate|medium|2\\+?|mittel.*")
+  if (!is.na(res[1,1])) {
+    return("Moderate")
+  }
+
+  # detect severe
+  res <- stringr::str_match(regurg_str, "severe|3\\+?|schwer.*")
+  if (!is.na(res[1,1])) {
+    return("Severe")
+  }
+
+  return(NULL)
+}
+
 
 #' Calculates the eGFR
 #'
