@@ -765,31 +765,71 @@ calc_sts <- function(age,
     }
   }
 
-  # if (!is.null(pre_cv_intervention)) {
-  #   queryList$prcvint <- parse_bool_and_add(stringr::str_to_title(pre_cv_intervention))
-  # }
+  if (!is.null(vd_mitral)) {
+    queryList$vdmit <- parse_bool_and_add(stringr::str_to_title(vd_mitral))
+  }
 
-  # if (!is.null(pre_pci)) {
-  #   queryList$pocpci <- parse_bool_and_add(stringr::str_to_title(inotropes))
-  #   if (queryList$pocpci == "Yes") {
-  #     queryList$prcvint <- "Yes"
-  #   }
-  # }
+  if (!is.null(vd_mitral_stenosis)) {
+    queryList$vdstenm <- parse_bool_and_add(stringr::str_to_title(vd_mitral_stenosis))
+    if (queryList$vdstenm == "Yes") {
+      queryList$vdmit <- "Yes"
+    }
+  }
 
+  if (!is.null(vd_aortic)) {
+    queryList$vdaort <- parse_bool_and_add(stringr::str_to_title(vd_aortic))
+  }
 
+  if (!is.null(vd_aortic_stenosis)) {
+    queryList$vdstena <- parse_bool_and_add(stringr::str_to_title(vd_aortic_stenosis))
+    if (queryList$vdstena == "Yes") {
+      queryList$vdaort <- "Yes"
+    }
+  }
 
-  # vd_mitral = NULL,
-  # vd_mitral_stenosis = NULL,
-  # vd_aortic = NULL,
-  # vd_aortic_stenosis = NULL,
-  # vd_aortic_regurg = NULL,
-  # vd_mitral_regurg = NULL,
-  # vd_tricuspid_regurg = NULL,
-  # no_cardiovascular_surgeries = NULL,
+  if (!is.null(vd_aortic_regurg)) {
+    regurg <- parse_vd_regurg(vd_aortic_regurg)
+
+    if (!(is.null(regurg) || is.na(regurg))) {
+      queryList$vdinsufa <- regurg
+    }
+  }
+
+  if (!is.null(vd_mitral_regurg)) {
+    regurg <- parse_vd_regurg(vd_mitral_regurg)
+
+    if (!(is.null(regurg) || is.na(regurg))) {
+      queryList$vdinsufm <- regurg
+    }
+  }
+
+  if (!is.null(vd_tricuspid_regurg)) {
+    regurg <- parse_vd_regurg(vd_tricuspid_regurg)
+
+    if (!(is.null(regurg) || is.na(regurg))) {
+      queryList$vdinsuft <- regurg
+    }
+  }
+
+  if (!is.null(no_cardiovascular_surgeries)) {
+    no_cardiovascular_surgeries <- readr::parse_number(no_cardiovascular_surgeries)
+
+    incidence <- ensurer::ensure(no_cardiovascular_surgeries,
+                                          is.numeric(.), . %in% c(0, 1, 2, 3, 4))
+
+    trans <- c("0"="First cardiovascular surgery",
+               "1"="First re-op cardiovascular surgery",
+               "2"="Second re-op cardiovascular surgery",
+               "3"="Third re-op cardiovascular surgery",
+               "4"="Fourth or more re-op cardiovascular surgery")
+
+    queryList$incidenc <- trans[as.character(incidence)]
+  }
 
   #queryList <- as.list(match.call())[-1]
   #queryList <- purrr::compact(queryList)
-  riskdf <- dplyr::as_data_frame(do_sts_request(queryList, verbose = verbose))
+  res <- do_sts_request(queryList, verbose = verbose)
+  riskdf <- dplyr::as_data_frame(res)
 
   dplyr::rename(riskdf,
                 Procedure = proceduretype,
