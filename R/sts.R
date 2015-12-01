@@ -753,7 +753,7 @@ calc_sts <- function(age,
   }
 
   if (!is.null(pre_pci)) {
-    queryList$pocpci <- parse_bool_and_add(stringr::str_to_title(inotropes))
+    queryList$pocpci <- parse_bool_and_add(stringr::str_to_title(pre_pci))
     if (queryList$pocpci == "Yes") {
       queryList$prcvint <- "Yes"
     }
