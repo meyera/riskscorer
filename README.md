@@ -39,7 +39,7 @@ calc_sts(proc_cabg = TRUE,
 
 ### Installation
 
-Pre-release versions can be install from this repository via
+Pre-release versions can be installed from this repository via
 
 ``` {.r}
 if (!require("devtools")) install.packages("devtools")
@@ -52,4 +52,4 @@ Alexander Meyer
 
 ### License
 
-MIT
+The MIT License (MIT)
