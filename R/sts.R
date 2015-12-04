@@ -1,5 +1,6 @@
 webservice_url <- "http://riskcalc.sts.org/stswebriskcalc/v1/calculate/stsall"
 
+
 do_sts_request <- function(queryList, verbose = FALSE) {
 
   if (verbose) {
@@ -405,6 +406,7 @@ calc_sts <- function(age,
 
   queryList <- list()
 
+  age <- readr::parse_number(age)
   queryList$age <- ensurer::ensure(age, is.numeric(.), . >= 1 , . <= 110)
   queryList$gender <- parse_sex(gender)
 
