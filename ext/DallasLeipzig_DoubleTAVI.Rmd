@@ -1,0 +1,193 @@
+---
+title: "DallasLeipzig_DoubleTAVI"
+author: "Alexander Meyer"
+date: "November 30, 2015"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gtrendsR)
+library(riskscorer)
+
+```
+
+## DoubleTAVI Patients STS Score
+
+* Female
+* 83 years
+* 162 cm, 51 kg
+* COPD
+* Severe Mitral Regurgitation
+* Severe Aortic Stenosis
+* Moderate Tricuspid Regurgitation
+* NYHA III
+* permanent Atrial fibrillation
+* Chronic renal failure, Creatinine 1.4 ml/min/1.72m²
+* KHK-2
+* s. p. PCI RCA + LAD
+
+
+```{r sim-pat}
+#library(riskscorer)
+library(dplyr)
+
+n <- 20
+
+age_lvef <- expand.grid(age = seq(from = 60, to = 90, length.out = n),
+            lvef = round(seq(from = 60, to = 20, length.out = n)))
+
+case_df <- dplyr::as.tbl(age_lvef)
+
+case_df$group = "Aortic + Mitral"
+case_df$gender = "F"
+case_df$height_cm = 162
+case_df$weight_kg = 51
+case_df$proc_cabg = FALSE
+case_df$proc_valve = "MVReplacement"
+case_df$no_cardiovascular_surgeries = 0
+case_df$vd_aortic_stenosis = TRUE
+case_df$vd_mitral_regurg = "severe"
+case_df$vd_tricuspid_regurg = "moderate"
+case_df$crea = 1.4
+case_df$chf_2w = TRUE
+case_df$chd_known = TRUE
+case_df$chd = "KHK-2"
+case_df$pre_cv_intervention = TRUE
+case_df$pre_pci = TRUE
+case_df$pre_pci_interval = ">6h"
+case_df$afib = "persistent"
+
+sim_patient <- function(case_desc) {
+  case_desc %>% group_by(lvef, age, group) %>% do({
+    res <- calc_sts(age = .$age, 
+             gender = .$gender,
+             weight_kg = .$weight_kg,
+             height_cm = .$height_cm,
+             proc_cabg = .$proc_cabg, 
+             proc_valve = .$proc_valve, 
+             no_cardiovascular_surgeries = .$no_cardiovascular_surgeries, 
+             vd_aortic_stenosis = .$vd_aortic_stenosis,
+             vd_mitral_regurg = .$vd_mitral_regurg,
+             vd_tricuspid_regurg = .$vd_tricuspid_regurg,
+             crea = .$crea,
+             chf_2w = .$chf_2w,
+             chd_known = .$chd_known,
+             chd = .$chd,
+             pre_cv_intervention = .$pre_cv_intervention,
+             pre_pci = .$pre_pci,
+             pre_pci_interval = .$pre_pci_interval,
+             lvef = .$lvef,
+             afib = .$afib
+             )
+    #print(res)
+    res
+  })
+}
+
+sims_full <- sim_patient(case_df)
+
+
+
+case_df$group <- "Redo Mitral + Aortic"
+case_df$no_cardiovascular_surgeries = 1
+sims_redo <- sim_patient(case_df)
+
+
+case_df$group <- "Isolated AVR"
+case_df$proc_valve <- "AVR"
+case_df$vd_mitral_regurg <- NULL
+case_df$no_cardiovascular_surgeries = 0
+sims_no_mvr <- sim_patient(case_df)
+
+sims <- rbind(sims_full, sims_redo, sims_no_mvr)
+
+sims$Mortality <- sims$Mortality * 100
+
+#readr::write_csv(sims, "LeipzigSim_100.csv")
+```
+
+## 3D Plots - prohibitive surgical risk?
+
+
+```{r pressure, echo=FALSE}
+
+
+# x = seq(1, 10, 1)
+# y = seq(1, 10, 1)
+# z = outer(x, y, "^")
+# 
+# persp(x = seq(1, 10, 1), y = seq(1, 10, 1), z, phi = 45, theta = 45,
+#   xlab = "X Coordinate (feet)", ylab = "Y Coordinate (feet)",
+#   main = "Surface elevation data"
+# )
+# 
+# 
+# require(rgl)
+# #  open renderer
+# open3d()
+# #  plot surface
+# rgl.surface( 1:10 , 1:10 , runif(100))
+# #  Export to png
+# rgl.snapshot( "sample.png" , fmt="png", top=TRUE )
+
+# library(animation)
+# animation::saveGIF({
+#   for (i in seq(from = -60, to = 60, by = 1)) {
+#     lattice::wireframe(Mortality ~ lvef*age, data = sims,
+#       xlab = "LVEF (%)", ylab = "Age (years)",
+#       main = "Mortality",
+#       drape = TRUE,
+#       colorkey = TRUE,
+#       screen = list(z = -60, x = -60)
+#     )  
+#   }
+# }, interval = 0.1, ani.width = 550, ani.height = 550)
+
+
+library(rgl)
+library(dplyr)
+
+sims <- readr::read_csv("ext/LeipzigSim_100.csv")
+sims$group <- car::recode(sims$group,
+                          "'Redo'='Redo Mitral + Aortic';'Full Surgery'='Aortic + Mitral';'Without Mitral Pathology'='Isolated AVR'")
+
+sims <- sims %>% arrange(desc(group))
+
+
+colormap <- c("Redo Mitral + Aortic" = "red",
+              "Aortic + Mitral" = "orange",
+              "Isolated AVR" = "darkgreen")
+
+par3d(cex = 1)
+par3d("windowRect"= c(30,30,1024,786))
+plot3d(sims$age, #jitter(sims$age, factor = 0.2),
+       sims$lvef,
+       sims$Mortality,
+       col = colormap[sims$group],
+#       type = "h",
+       xlab = "Age [y]",
+       ylab = "LVEF [%]",
+       zlab = "Mortality [%]",
+       zlim = c(0,20)
+       )
+
+#show2d()
+#persp3d()
+
+legend3d("right", bty = "n", pch = 1, cex = 1,
+         c("Redo Mitral + Aortic", "Aortic + Mitral", "Isolated AVR"),
+         col = c("red", "orange", "darkgreen"))
+aspect3d(1.5,1,1)
+decorate3d(box = FALSE)
+grid3d(c("z"))
+
+#play3d()
+f <- spin3d(axis = c(0, 0, 1), rpm = 4)
+play3d(f)
+movie3d(f, duration = 15, fps = 25, movie = "movie3d", clean = FALSE)
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

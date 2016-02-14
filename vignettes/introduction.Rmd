@@ -26,6 +26,8 @@ knitr::opts_chunk$set(dev = "CairoPNG",
                       fig.height = 5,
                       echo = FALSE)
 
+
+
 ```
 
 
@@ -60,7 +62,7 @@ The simulated patients have the following characteristics:
 The graphs plot the probability of each risk category against the variable creatinine value.
   
 ```{r data-sim-3d, cache=TRUE}
-n = 20#23
+n = 30#23
 
 grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
             lvef = rep(seq(10, 60, length.out = n)),
@@ -100,6 +102,9 @@ threejs::scatterplot3js(y = prom$crea, x= prom$lvef, z = prom$probability,
                                        prom$lvef, 
                                        prom$probability*100),
                         renderer = "canvas")
+
+
+#plotly::3d
 
 # plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability)
 # plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability,
@@ -189,7 +194,13 @@ sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortali
 
 qplot(x = crea, y = probability, facets = ~gender, color = Risk, data = sims_long, geom = c("line")) + theme_bw()
 
+#plotly::ggplotly()
+
 qplot(x = crea, y = probability, facets = ~Risk, color = gender, data = sims_long, geom = c("line")) + theme_bw()
+
+#plotly::ggplotly()
+
+
 ```
 
 ### Example 3: batch processed clusters of a two cohorts of typical TAVI and typical CABG only patients
