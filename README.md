@@ -1,5 +1,5 @@
 
-## riskscorer [![Package-License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT) 
+## riskscorer [![Package-License](https://img.shields.io/packagist/l/doctrine/orm.svg)](https://opensource.org/licenses/MIT)
 
 `riskscorer` provides an interface for calculation of surgical risk scores
 
@@ -15,8 +15,7 @@ The following score are under development
 
 ### Example
 
-In this simple example, trends for keywords `nhl`, `nba` and `nfl` are
-retrieved and then plotted from R.
+In this simple example known data of a potential patient is entered as arguments.
 
 ``` {.r}
 calc_sts(proc_cabg = TRUE,
@@ -35,7 +34,24 @@ calc_sts(proc_cabg = TRUE,
 # 1 AV Replacement + CAB   0.01415             0.11393       0.00168  0.04453     0.00878      0.06237       0.01895     0.06435   0.51145
 ```
 
+Coding can differ.
 
+``` {.r}
+calc_sts(proc_cabg = TRUE,
+           proc_valve = "avr",
+           gender = "m",
+           age = 60,
+           lvef = 35,
+           weight_kg = 65,
+           height_cm = 185,
+           chf_2w = 1)
+Source: local data frame [1 x 10]
+
+# Procedure Mortality Morbidity_Mortality DSW_Infection Long_LOS Perm_Stroke Prolong_Vent Renal_failure Reoperation
+#      (chr)     (dbl)               (dbl)         (dbl)    (dbl)       (dbl)        (dbl)         (dbl)       (dbl)
+# 1 AV Replacement + CAB   0.01415             0.11393       0.00168  0.04453     0.00878      0.06237       0.01895     0.06435
+# Variables not shown: Short_LOS (dbl)
+```
 
 ### Installation
 

@@ -62,7 +62,7 @@ The simulated patients have the following characteristics:
 The graphs plot the probability of each risk category against the variable creatinine value.
   
 ```{r data-sim-3d, cache=TRUE}
-n = 30#23
+n = 10#23
 
 grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
             lvef = rep(seq(10, 60, length.out = n)),
