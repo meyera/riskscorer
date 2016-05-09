@@ -5,8 +5,8 @@
 > Meyer, Alexander<br>
 > Vogel, Stefan<br>
 > Sündermann, Simon<br>
-> Falk, Volkmar<br>
-> Kempfert, Jörg
+> Kempfert, Jörg<br>
+> Falk, Volkmar
 
 _German Heart Institute Berlin, Department of Cardiothoracic and Vascular Surgery, Berlin, Germany_
 <br>https://www.dhzb.de/en/homepage/
@@ -19,7 +19,7 @@ We developed the _riskscorer_ package for easy and automatic clinical risk score
 * extensibility
 * flexible handling of differing data codings
 * individual patient risk calculation as well as the possibility of batch processing
-* an HTTP web-service interface based on the plumber package for easy integration into an existing clinical information system infrastructure
+* an HTTP web-service interface based on the plumber (https://github.com/trestletech/plumber) package for easy integration into an existing clinical information system infrastructure
 
 Currently three surgical risk scores are implemented: STS score (http://riskcalc.sts.org/), EuroScore I and EuroScore II (http://www.euroscore.org/). It is already used in our research and integration into our clinical information system is planned. The riskscorer package is under continues development and we have released the source code under the MIT license on the GitHub platform (https://github.com/meyera/riskscorer).
 
