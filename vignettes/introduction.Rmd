@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, results='hide', echo=FALSE, cache=TRUE, cache.vars=TRUE}
+```{r setup, results='hide', echo=FALSE, cache=FALSE, cache.vars=TRUE}
 #library(pander)
 #library(printr)
 #library(wakefield)
@@ -24,6 +24,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 knitr::opts_chunk$set(dev = "CairoPNG",
                       fig.width = 6,
                       fig.height = 5,
+                      cache=FALSE,
                       echo = FALSE)
 
 
@@ -61,8 +62,8 @@ The simulated patients have the following characteristics:
 
 The graphs plot the probability of each risk category against the variable creatinine value.
   
-```{r data-sim-3d, cache=TRUE}
-n = 10#23
+```{r data-sim-3d}
+n = 3#23
 
 grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
             lvef = rep(seq(10, 60, length.out = n)),
@@ -161,8 +162,8 @@ threejs::scatterplot3js(y = prom$crea, x= prom$lvef, z = prom$probability,
 
 
 ### Example 2: Simulated patient data. Except crea, levef and sex, all covariates are fixed.
-```{r data-sim-1, cache=TRUE}
-n = 5#23
+```{r data-sim-1}
+n = 3#23
 
 grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
             gender = c("Male", "Female"))
@@ -206,7 +207,7 @@ qplot(x = crea, y = probability, facets = ~Risk, color = gender, data = sims_lon
 ### Example 3: batch processed clusters of a two cohorts of typical TAVI and typical CABG only patients
 
 
-```{r data-sim-2, cache=TRUE,fig.width=7,fig.height=5}
+```{r data-sim-2,fig.width=7,fig.height=5}
 
 set.seed(5)
 n = 4
@@ -307,36 +308,36 @@ Terms and conditions prohibit the use for batch processing or reverse engenierri
 
 ## German Aortic Valve Score
 ```{r}
-n = 500#23
-
-grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
-            lvef = rep(seq(10, 60, length.out = n)),
-            gender = c("Male", "Female"))
-
-df_sim <- grid_df %>% as.data.frame %>% as.tbl
-
-df_sim$age = 75
-df_sim$proc_cabg = TRUE
-df_sim$proc_valve = "AVR"
-df_sim$chf_2w = TRUE
-df_sim$height_cm = 170
-df_sim$weight_kg = 75
-
-sims <- df_sim %>% group_by(lvef, crea, gender) %>% do(
-#  es_II()
-  #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
-)
-
-sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
-
-prom <- sims_long %>% dplyr::filter(Risk == "Mortality")
-threejs::scatterplot3js(y = prom$crea, x= prom$lvef, z = prom$probability)
-
-plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability)
-
-lattice::wireframe(probability ~ lvef + crea, data = prom, drape = TRUE, colorkey = TRUE)
-
-plot3D::surf3D(y = prom$crea, x= prom$lvef, z = prom$probability)
+# n = 500#23
+# 
+# grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
+#             lvef = rep(seq(10, 60, length.out = n)),
+#             gender = c("Male", "Female"))
+# 
+# df_sim <- grid_df %>% as.data.frame %>% as.tbl
+# 
+# df_sim$age = 75
+# df_sim$proc_cabg = TRUE
+# df_sim$proc_valve = "AVR"
+# df_sim$chf_2w = TRUE
+# df_sim$height_cm = 170
+# df_sim$weight_kg = 75
+# 
+# sims <- df_sim %>% group_by(lvef, crea, gender) %>% do(
+# #  es_II()
+#   #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+# )
+# 
+# sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
+# 
+# prom <- sims_long %>% dplyr::filter(Risk == "Mortality")
+# threejs::scatterplot3js(y = prom$crea, x= prom$lvef, z = prom$probability)
+# 
+# plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability)
+# 
+# lattice::wireframe(probability ~ lvef + crea, data = prom, drape = TRUE, colorkey = TRUE)
+# 
+# plot3D::surf3D(y = prom$crea, x= prom$lvef, z = prom$probability)
 ```
 
 ### GAVS Examples
