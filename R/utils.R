@@ -1,6 +1,8 @@
 bool_str_title_cs <- stringr::str_to_title(c("YES", "NO", "1", "0", "Y", "N", "T", "F", "TRUE", "FALSE"))
 
 parse_bool <- function(x) {
+  if (is.null(x) || is.na(x)) return(NULL)
+
   x <- stringr::str_to_upper(as.character(x))
   x <- car::recode(x, "c('0','FALSE','F','NO','N')='FALSE';c('1','TRUE','T','Y','YES')='TRUE';else=NA")
 
@@ -21,6 +23,44 @@ parse_bool_and_add <- function(x, additionals = NULL, return_val_true = "Yes", r
   } else {
     stop(paste0("Expected a boolean string + the following additionals:", paste0(additionals, collapse = ", ")))
   }
+}
+
+logical_to_numeric_or_null <- function(x) {
+  if (is.null(x) || is.na(x)) {
+    return(NULL)
+  } else if (is.logical(x)) {
+    as.numeric(x)
+  } else {
+    stop("Expect a logical value to convert to a numeric")
+  }
+}
+
+round2 = function(x, n=0) {
+  posneg = sign(x)
+  z = abs(x)*10^n
+  z = z + 0.5
+  z = trunc(z)
+  z = z/10^n
+  z*posneg
+}
+
+# parses a NYHA string into the numeric NYHA stages, if input number is numeric, values will be round.
+# returns a numeric vector containing only the numbers 1, 2, 3, 4 as values
+parse_nyha <- function(x) {
+  if (is.numeric(x)) {
+    stopifnot(x >= 1.0)
+    stopifnot(x <= 4)
+
+    x <- round2(x)
+  } else if (is.character(x)) {
+    x <- parse_nyha(readr::parse_number(x))
+  } else if (is.na(NA)){
+    x <- NULL
+  } else {
+    stop("Expected either a numeric or character vector")
+  }
+
+  x
 }
 
 # parses a string into two defined sex values

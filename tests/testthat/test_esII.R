@@ -1,7 +1,15 @@
 library(testthat)
 library(riskscorer)
 
-context("ES II calculation")
+context("ES II calculation interface")
+
+test_that("Age and gender get passed on correctly", {
+  expect_equal(0.0141, calc_esII(89, 1))
+  expect_equal(0.0141, calc_esII(89, "F"))
+  expect_equal(0.0113, calc_esII(89, "Male"))
+})
+
+context("ES II internal calculation")
 
 test_that("ESII piecewise - Age and NYHA", {
   expect_equal(0.0050, es_II(NYHA = "I", age = 50))

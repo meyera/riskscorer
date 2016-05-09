@@ -26,11 +26,11 @@
 #' @export
 #'
 #' @examples
-es_II <- function(NYHA = NULL,
+es_II <- function(age,
+                  female,
+                  NYHA = NULL,
                   CCS4 = NULL,
                   IDDM = NULL,
-                  age = NULL,
-                  female = NULL,
                   ECA = NULL,
                   CPD = NULL,
                   nm_mob = NULL,
@@ -174,12 +174,36 @@ es_II <- function(NYHA = NULL,
 #'
 #' Fuzzy matching
 #'
-#' @param age
-#' @param female
+#' @param age Age in years, must be within 20 and 100
+#' @param gender Gender of the patient, should be "Male" or "Female", 'F' or 'M',
+#'        plus in addition
+#'          all boolean FALSE strings --> Male
+#'          all boolean TRUE strings --> Female
+#' @param iddm Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param extracardiac_arteriopathy Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param chronic_pulmonary_disease Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param poor_mobiltiy Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param redo_surgery Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param active_endocarditis Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param critical_state_preop Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param recent_mi Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param thoracic_aorta Valid values: 'TRUE', 'FALSE', '1', '0',
+#'                  'T', 'F', 'Y', 'N', 'Yes', 'No'
+#' @param urgency Indicate the clinical status of the patient prior to entering the operating room.
+#'                Indication urgency, accepts the following values:
+#'                NULL or "elective|elektiv", "urgent|dringlich",
+#'                "emergent|emergency|notfall|notfallindikation",
+#'                "salvage|emergent salvage"
 #' @param renal_impairment
 #' @param crea
-#' @param extracardiac_arteriopathy
-#' @param poor_mobiltiy
 #'
 #' @return
 #' @export
@@ -190,13 +214,62 @@ es_II <- function(NYHA = NULL,
 #* @get /calc_esII
 #* @post /calc_esII
 calc_esII <- function(age,
-                      female = NULL,
-                      renal_impairment = NULL,
-                      crea = NULL,
+                      gender,
+                      nyha = NULL,
+                      iddm = NULL,
                       extracardiac_arteriopathy = NULL,
-                      poor_mobiltiy = NULL
+                      chronic_pulmonary_disease = NULL,
+                      poor_mobiltiy = NULL,
+                      redo_surgery = NULL,
+                      active_endocarditis = NULL,
+                      critical_state_preop = NULL,
+                      recent_mi = NULL,
+                      thoracic_aorta = NULL,
+                      urgency = NULL,
+                      renal_impairment = NULL, crea = NULL
                       ) {
+  queryList <- list()
 
+  age <- readr::parse_number(age)
+  queryList$age <- ensurer::ensure(age, is.numeric(.), . >= 1 , . <= 110)
+  queryList$female <- as.numeric(parse_sex(gender, male_numeric_code = 0,
+                                           female_numeric_code = 1,
+                                           male_bool_code = FALSE) == "Female")
+
+  if (!is.null(nyha)) {
+    queryList$NYHA <- c("I", "II", "III", "IV")[parse_nyha(nyha)]
+  }
+
+  queryList$IDDM            <- logical_to_numeric_or_null(parse_bool(iddm))
+  queryList$ECA             <- logical_to_numeric_or_null(parse_bool(extracardiac_arteriopathy))
+  queryList$CPD             <- logical_to_numeric_or_null(parse_bool(chronic_pulmonary_disease))
+  queryList$nm_mob          <- logical_to_numeric_or_null(parse_bool(poor_mobiltiy))
+  queryList$redo            <- logical_to_numeric_or_null(parse_bool(redo_surgery))
+  queryList$active_endo     <- logical_to_numeric_or_null(parse_bool(active_endocarditis))
+  queryList$critical        <- logical_to_numeric_or_null(parse_bool(critical_state_preop))
+  queryList$recent_mi       <- logical_to_numeric_or_null(parse_bool(recent_mi))
+  queryList$thoracic_aorta  <- logical_to_numeric_or_null(parse_bool(thoracic_aorta))
+
+  if (!is.null(urgency)) {
+    urgency <- stringr::str_trim(stringr::str_to_lower(urgency))
+
+    if (urgency %in% c("elective", "elektiv")) {
+      queryList$urgency <- "elective"
+    } else if (urgency %in% c("urgent", "dringlich")) {
+      queryList$urgency <- "urgent"
+    } else if (urgency %in% c("emergent", "emergency", "notfall", "notfallindikation")) {
+      queryList$urgency <- "emergency"
+    } else if (urgency %in% c("emergent salvage", "salvage")) {
+      queryList$urgency <- "salvage"
+    } else if (is.na(urgency)) {
+      # ignore
+    } else {
+      stop("Coding of 'urgency' not recognized.")
+    }
+  }
+
+  print(queryList)
+  do.call(es_II, queryList)
 }
 
 

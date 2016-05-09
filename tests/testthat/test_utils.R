@@ -1,6 +1,30 @@
 library(testthat)
 library(riskscorer)
 
+context("Checking logical_to_numeric_or_null")
+test_that("logical_to_numeric_or_null works corretly", {
+  expect_null(logical_to_numeric_or_null(NULL))
+  expect_null(logical_to_numeric_or_null(NA))
+  expect_equal(1, logical_to_numeric_or_null(TRUE))
+  expect_equal(0, logical_to_numeric_or_null(FALSE))
+  expect_error(logical_to_numeric_or_null(1))
+  expect_error(logical_to_numeric_or_null("1"))
+})
+
+context("Checking NYHA parsing")
+test_that("NYHA gets parsed correctly", {
+  expect_equal(1 ,parse_nyha(1.3))
+  expect_equal(2 ,parse_nyha(1.5))
+  expect_error(parse_nyha(0.5))
+  expect_error(parse_nyha(4.2))
+  expect_equal(1 ,parse_nyha("1.3"))
+  expect_equal(2 ,parse_nyha("1.5"))
+  expect_error(parse_nyha("0.5"))
+  expect_error(parse_nyha("NYHA 4.2"))
+  expect_null(parse_nyha(NA))
+  expect_null(parse_nyha(NULL))
+})
+
 context("Checking eGFR calculation")
 test_that("eGFR gets correctly calculated", {
   expect_equal(90, cc_eGFR(1, weight = 80, age = 45, sex = "Female"))
