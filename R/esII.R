@@ -226,7 +226,9 @@ calc_esII <- function(age,
                       recent_mi = NULL,
                       thoracic_aorta = NULL,
                       urgency = NULL,
-                      renal_impairment = NULL, crea = NULL
+                      renal_impairment_or_crea = NULL,
+                      sPAP_or_classification = NULL,
+                      lv_impairment_or_ef = NULL
                       ) {
   queryList <- list()
 
