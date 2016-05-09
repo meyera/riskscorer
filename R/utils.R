@@ -525,9 +525,9 @@ radial_plot <- function(plot.data,
 
   # ... + grid-line labels (max; ave; min) [only add min. gridline label if required]
   if (label.gridline.min==TRUE) {
-    base <- base + geom_text(aes(x=x,y=y,label=text),data=gridline$min$label,face="bold",size=grid.label.size, hjust=1) }
-  base <- base + geom_text(aes(x=x,y=y,label=text),data=gridline$mid$label,face="bold",size=grid.label.size, hjust=1)
-  base <- base + geom_text(aes(x=x,y=y,label=text),data=gridline$max$label,face="bold",size=grid.label.size, hjust=1)
+    base <- base + geom_text(aes(x=x,y=y,label=text),data=gridline$min$label,fontface="bold",size=grid.label.size, hjust=1) }
+  base <- base + geom_text(aes(x=x,y=y,label=text),data=gridline$mid$label,fontface="bold",size=grid.label.size, hjust=1)
+  base <- base + geom_text(aes(x=x,y=y,label=text),data=gridline$max$label,fontface="bold",size=grid.label.size, hjust=1)
 
   # ... + centre.y label if required [i.e. value of y at centre of plot circle]
   if (label.centre.y==TRUE) {
