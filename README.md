@@ -1,5 +1,6 @@
 
-## riskscorer [![Package-License](https://img.shields.io/packagist/l/doctrine/orm.svg)](https://opensource.org/licenses/MIT)
+## riskscorer [![Package-License](https://img.shields.io/packagist/l/doctrine/orm.svg)](https://opensource.org/licenses/MIT) [![DOI](https://zenodo.org/badge/21914/meyera/riskscorer.svg)](https://zenodo.org/badge/latestdoi/21914/meyera/riskscorer)
+
 
 `riskscorer` provides an interface for calculation of surgical risk scores
 
