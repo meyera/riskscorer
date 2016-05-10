@@ -3,10 +3,26 @@ library(riskscorer)
 
 context("ES II calculation interface")
 
-test_that("Age and gender get passed on correctly", {
+test_that("Test programming interface", {
   expect_equal(0.0141, calc_esII(89, 1))
   expect_equal(0.0141, calc_esII(89, "F"))
   expect_equal(0.0113, calc_esII(89, "Male"))
+  expect_equal(0.0242, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE))
+  expect_equal(0.0242, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE))
+  expect_equal(0.0553, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE, renal_impairment_or_eGFR = 45))
+  expect_equal(0.0553, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE, renal_impairment_or_eGFR = "schwerstgradige NI"))
+  expect_equal(0.0553, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE, renal_impairment_or_eGFR = "severe"))
+  expect_equal(0.045, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE, renal_impairment_or_eGFR = "Dialyse"))
+  expect_equal(0.0325, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE, renal_impairment_or_eGFR = "moderat"))
+  expect_equal(0.0325, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE, renal_impairment_or_eGFR = "moderat"))
+  expect_equal(0.0407, calc_esII(89, 1, CABG = TRUE, valve_surgery = TRUE, extracardiac_arteriopathy = 1))
+  expect_equal(0.0113, calc_esII(89, "m"))
+  expect_equal(0.0126, calc_esII(89, "m", nyha = "NYHA2"))
+  expect_equal(0.0197, calc_esII(89, "m", nyha = "4"))
+  expect_equal(0.0197, calc_esII(89, "m", nyha = "NYHA class 4"))
+  expect_equal(0.0267, calc_esII(89, "m", nyha = "NYHA class 4", lv = "moderat"))
+  expect_equal(0.0375, calc_esII(89, "m", nyha = "NYHA class 4", lv = "moderat", sPAP = 70))
+  expect_equal(0.0730, calc_esII(89, "m", nyha = "NYHA class 4", lv = "moderat", sPAP = 70, urgency = "Notfall"))
 })
 
 context("ES II internal calculation")
