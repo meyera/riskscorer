@@ -456,7 +456,7 @@ calc_esII <- function(age,
     }
   }
 
-  print(queryList)
+  #print(queryList)
   do.call(es_II, queryList)
 }
 
