@@ -304,6 +304,58 @@ Terms and conditions prohibit the use for batch processing or reverse engenierri
 
 ### ES II examples
 
+```{r}
+n = 10
+
+grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
+            lvef = rep(seq(10, 60, length.out = n)),
+            gender = c("Male", "Female"))
+
+df_sim <- grid_df %>% as.data.frame %>% as.tbl
+
+v_cc_eGFR <- Vectorize(cc_eGFR)
+
+df_sim$age = 75
+df_sim$proc_cabg = TRUE
+df_sim$proc_valve = TRUE
+df_sim$urgency = "elective"
+df_sim$height_cm = 170
+df_sim$weight_kg = 75
+df_sim$sPAP = 33
+df_sim$renal = v_cc_eGFR(crea = df_sim$crea, 
+                       weight = df_sim$weight_kg, 
+                       age = df_sim$age, 
+                       sex = df_sim$gender)
+
+sims <- df_sim %>% group_by(lvef, crea, gender) %>% do(
+  data_frame(Mortality = calc_esII(valve_surgery = .$proc_valve, 
+           CABG = .$proc_cabg, 
+           age = .$age, 
+           gender = .$gender,
+           renal = .$renal,
+           sPAP = .$lvef,
+           urgency = .$urgency,
+           lv = .$lvef))
+  #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
+)
+
+#sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
+
+threejs::scatterplot3js(y = sims$crea, x= sims$lvef, z = sims$Mortality,
+                        color = ifelse(sims$gender == "Male", "lightblue", "red"),
+                        grid ="TRUE",
+                        labels=sprintf("Sex=%s, Crea=%.2f mg/dL, LVEF=%.2f %%, PROM=%.2f %%", 
+                                       sims$gender,
+                                       sims$crea, 
+                                       sims$lvef, 
+                                       sims$Mortality*100),
+                        renderer = "canvas")
+
+qplot(x = lvef, y = Mortality, facets = ~gender, color = crea, data = sims, geom = c("point")) + theme_bw()
+
+
+```
+
 
 
 ## German Aortic Valve Score
