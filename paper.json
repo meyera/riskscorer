@@ -6,23 +6,23 @@
       "@type": "Person",
       "email": "meyera@dhzb.de",
       "name": "Alexander Meyer",
-      "affiliation": "German Heart Institute Berlin, Department of Cardiothoracic and Vascular Surgery, Berlin, Germany"
+      "affiliation": "German Heart Institute Berlin; German Centre for Cardiovascular Research"
     },
     {
       "@type": "Person",
       "email": "kempfert@dhzb.de",
       "name": "Jörg Kempfert",
-      "affiliation": "German Heart Institute Berlin, Department of Cardiothoracic and Vascular Surgery, Berlin, Germany"
+      "affiliation": "German Heart Institute Berlin"
     },
     {
       "@type": "Person",
       "email": "falk@dhzb.de",
       "name": "Volkmar Falk",
-      "affiliation": "German Heart Institute Berlin, Department of Cardiothoracic and Vascular Surgery, Berlin, Germany"
+      "affiliation": "German Heart Institute Berlin; German Centre for Cardiovascular Research"
     }
   ],
-  "identifier": "http://dx.doi.org/10.5281/zenodo.51161",
-  "codeRepository": "https://github.com/meyera/riskscorer/tree/v0.1.1",
+  "identifier": "http://dx.doi.org/10.5281/zenodo.51342",
+  "codeRepository": "https://github.com/meyera/riskscorer",
   "datePublished": "2016-05-12",
   "dateModified": "2016-05-12",
   "dateCreated": "2015-11-07",

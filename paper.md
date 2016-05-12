@@ -7,11 +7,11 @@ tags:
 authors:
  - name: Alexander Meyer
    orcid: 0000-0002-6944-2478
-   affiliation: German Heart Institute Berlin, Department of Cardiothoracic and Vascular Surgery, Berlin, Germany 
+   affiliation: German Heart Institute Berlin; German Centre for Cardiovascular Research 
  - name: Jörg Kempfert
-   affiliation: German Heart Institute Berlin, Department of Cardiothoracic and Vascular Surgery, Berlin, Germany 
+   affiliation: German Heart Institute Berlin 
  - name: Volkmar Falk
-   affiliation: German Heart Institute Berlin, Department of Cardiothoracic and Vascular Surgery, Berlin, Germany 
+   affiliation: German Heart Institute Berlin; German Centre for Cardiovascular Research 
 date: 12 May 2016
 bibliography: paper.bib
 ---
