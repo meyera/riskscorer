@@ -46,11 +46,11 @@ The following less used scores are under development:
 The programmatical interface can be used in various scenarios:
 
 1. Simulation research based on a risk score model (see Figure 1)
-1. Comparison of risk models
-1. Data pre-processing and acurate risk score gathering before analysis. (saves work at data entry stage, ensures reproduceibility and thus avoids errors)
-1. Usage of the webservice deployment
-  1. for rapid batch processing of a data pool
-  1. for clinical information systems to request on demand score calculation
+2. Comparison of risk models
+3. Data pre-processing and acurate risk score gathering before analysis. (saves work at data entry stage, ensures reproduceibility and thus avoids errors)
+4. Usage of the webservice deployment
+    + for rapid batch processing of a data pool
+    + for clinical information systems to request on demand score calculation
 
 ### Example 1: Simulated patient data. Except creatinine, LV function and gender, all covariates are fixed.
 
@@ -68,7 +68,7 @@ The simulated patients have the following characteristics:
 The graphs plot the probability of 30d mortality against the left ventricular function and  creatinine value.
   
 ```{r data-sim-3d}
-n = 3#23
+n = 5#23
 
 grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
             lvef = rep(seq(10, 60, length.out = n)),
@@ -222,19 +222,19 @@ qplot(x = crea, y = probability, facets = ~Risk, color = gender, data = sims_lon
 The simulated patients have the following characteristics:
 
 * TAVI cohort
-   + Procedure: AVR(aortic valve replacement)
-   + Gender: : random distribution (probability: M = 0.5122, no = 0.4878)
-   + Age: random age in range __78 - 100__ years
-   + Left ventricular function: random lvef (mean=50, sd=10)
-   + Creatinine: random creatinine value (__mean=1.2, sd=0.2__)
-   + Symptoms of heart failure: random distribution (probability: __yes = 0.9, no = 0.1__)
+    + Procedure: AVR(aortic valve replacement)
+    + Gender: : random distribution (probability: M = 0.5122, no = 0.4878)
+    + Age: random age in range __78 - 100__ years
+    + Left ventricular function: random lvef (mean=50, sd=10)
+    + Creatinine: random creatinine value (__mean=1.2, sd=0.2__)
+    + Symptoms of heart failure: random distribution (probability: __yes = 0.9, no = 0.1__)
 * CABG cohort
-   + Procedure: CABG
-   + Gender: : random distribution (probability: M = 0.5122, no = 0.4878)
-   + Age: random age in range __40 - 70__ years
-   + Left ventricular function: random lvef (mean=50, sd=10)
-   + Creatinine: random creatinine value (__mean=0.8, sd=0.1__)
-   + Symptoms of heart failure: random distribution (probability: __yes = 0.2, no = 0.8__)
+    + Procedure: CABG
+    + Gender: : random distribution (probability: M = 0.5122, no = 0.4878)
+    + Age: random age in range __40 - 70__ years
+    + Left ventricular function: random lvef (mean=50, sd=10)
+    + Creatinine: random creatinine value (__mean=0.8, sd=0.1__)
+    + Symptoms of heart failure: random distribution (probability: __yes = 0.2, no = 0.8__)
 
 ```{r data-sim-2,fig.width=7,fig.height=5}
 
@@ -329,7 +329,7 @@ The risk calculation of the EuroScore II is based on a logistic regression model
 ### ES II examples
 
 ```{r}
-n = 3
+n = 5
 
 grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
             lvef = rep(seq(10, 60, length.out = n)),
