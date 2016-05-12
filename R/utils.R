@@ -327,7 +327,9 @@ radial_plot <- function(plot.data,
                              background.circle.transparency=0.2,
                              plot.legend=if (nrow(plot.data)>1) TRUE else FALSE,
                              legend.title="Cluster",
-                             legend.text.size=grid.label.size ) {
+                             legend.text.size=grid.label.size,
+                             linetype = NULL
+                        ) {
 
   var.names <- colnames(plot.data)[-1]  #'Short version of variable names
   #axis.labels [if supplied] is designed to hold 'long version' of variable names

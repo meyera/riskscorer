@@ -32,35 +32,40 @@ knitr::opts_chunk$set(dev = "CairoPNG",
 ```
 
 
-The package *riskscorer* is an attempt to provide an easy programatical interface to clinical risk models. It supports robust fuzzy argument matching and is webservice ready via [plumber](http://plumber.trestletech.com/) decoration.
-A the moment only operative risk scores in cardiac surgery are implemented:
+The package *riskscorer* is a set of functions to provide an easy programmatical interface to clinical risk models. It supports fuzzy argument matching and is webservice ready via [plumber](http://plumber.trestletech.com/) decoration.
+A the moment two operative risk scores in cardiac surgery are implemented:
 
 * [STS Score](http://riskcalc.sts.org/)
-* [EuroScore I](http://www.euroscore.org)
 * [EuroScore II](http://www.euroscore.org)
+
+The following less used scores are under development:
+
+* [EuroScore I](http://www.euroscore.org)
 * [German AV Score](http://doi.org/10.1093/ejcts/ezt114)
 
 The programmatical interface can be used in various scenarios:
 
 1. Simulation research based on a risk score model (see Figure 1)
 1. Comparison of risk models
-1. Data pre-processing and acurate risk score gathering before analysis. (saves work at data entry stage and thus avoids errors)
-1. Usage of the webservice for rapid batch processing of a data pool
+1. Data pre-processing and acurate risk score gathering before analysis. (saves work at data entry stage, ensures reproduceibility and thus avoids errors)
+1. Usage of the webservice deployment
+  1. for rapid batch processing of a data pool
+  1. for clinical information systems to request on demand score calculation
 
-### Example 1: Simulated patient data. Except crea and sex, all covariates are fixed.
+### Example 1: Simulated patient data. Except creatinine, LV function and gender, all covariates are fixed.
 
 The simulated patients have the following characteristics:
 
-* __Crea: 0.8 - 3.0 mg/dL__
+* __Creatinine: 0.8 - 3.0 mg/dL__
+* __Left ventricular function: 10 - 60 %__
 * __Sex: Male or Female__
-* Procedure: CABG+AVR
+* Procedure: CABG(Bypass surgery) + AVR(aortic valve replacement)
 * Weight: 75 kg
 * Height: 170 cm
 * Symptoms of heart failure
 * Age: 75
-* LVEF: 60 %
 
-The graphs plot the probability of each risk category against the variable creatinine value.
+The graphs plot the probability of 30d mortality against the left ventricular function and  creatinine value.
   
 ```{r data-sim-3d}
 n = 3#23
@@ -161,8 +166,22 @@ threejs::scatterplot3js(y = prom$crea, x= prom$lvef, z = prom$probability,
 ```
 
 
-### Example 2: Simulated patient data. Except crea, levef and sex, all covariates are fixed.
-```{r data-sim-1}
+### Example 2: Simulated patient data. Except creatinine and gender, all covariates are fixed.
+
+The simulated patients have the following characteristics:
+
+* __Creatinine: 0.8 - 3.0 mg/dL__
+* __Sex: Male or Female__
+* Left ventricular function: 45 %
+* Procedure: AVR(aortic valve replacement)
+* Weight: 75 kg
+* Height: 170 cm
+* Symptoms of heart failure
+* Age: 75
+
+The graphs plot the probability of each risk category against the gender and creatinine value.
+
+```{r data-sim-2d}
 n = 3#23
 
 grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
@@ -188,29 +207,39 @@ sims <- df_sim %>% group_by(crea, gender) %>% do(
            height_cm = .$height_cm,
            weight_kg = .$weight_kg,
            lvef = .$lvef)
-  #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
 )
 
 sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
 
 qplot(x = crea, y = probability, facets = ~gender, color = Risk, data = sims_long, geom = c("line")) + theme_bw()
 
-#plotly::ggplotly()
-
 qplot(x = crea, y = probability, facets = ~Risk, color = gender, data = sims_long, geom = c("line")) + theme_bw()
-
-#plotly::ggplotly()
-
 
 ```
 
-### Example 3: batch processed clusters of a two cohorts of typical TAVI and typical CABG only patients
+### Example 3: clusters of a two cohorts of typical multimorbid TAVR (transcatheter heart valve replacement) and typical younger CABG only patients
 
+The simulated patients have the following characteristics:
+
+* TAVI cohort
+   + Procedure: AVR(aortic valve replacement)
+   + Gender: : random distribution (probability: M = 0.5122, no = 0.4878)
+   + Age: random age in range __78 - 100__ years
+   + Left ventricular function: random lvef (mean=50, sd=10)
+   + Creatinine: random creatinine value (__mean=1.2, sd=0.2__)
+   + Symptoms of heart failure: random distribution (probability: __yes = 0.9, no = 0.1__)
+* CABG cohort
+   + Procedure: CABG
+   + Gender: : random distribution (probability: M = 0.5122, no = 0.4878)
+   + Age: random age in range __40 - 70__ years
+   + Left ventricular function: random lvef (mean=50, sd=10)
+   + Creatinine: random creatinine value (__mean=0.8, sd=0.1__)
+   + Symptoms of heart failure: random distribution (probability: __yes = 0.2, no = 0.8__)
 
 ```{r data-sim-2,fig.width=7,fig.height=5}
 
 set.seed(5)
-n = 4
+n = 3
 df_sim_tavi <- r_data_frame(
     n = n,
     age(x = 78:100),
@@ -271,41 +300,36 @@ knitr::kable(tab_view %>% dplyr::select(Patient,
 # dend %>% set("branches_k_color") %>% rect.dendrogram(k=2, border = 8, lty = 5, lwd = 2) %>% plot
 
 
-radial_plot(sims %>% dplyr::select(-Short_LOS, -Procedure) %>% dplyr::rename(group = Patient) %>% as.data.frame,
+p <- radial_plot(sims %>% dplyr::select(-Short_LOS, -Procedure) %>% dplyr::rename(group = Patient) %>% as.data.frame,
                  grid.min = 0, grid.max = 0.3,legend.title = "Patient",
                  plot.extent.x = 1.7, plot.extent.y = 1.2,
                  label.centre.y = FALSE, centre.y = -0.1,
                  group.line.width  = 0.1,
-                 group.point.size = 2,
+                 group.point.size = 2
                  )
-
+p
 ```
 
 ## STS Score Implemtation
 
-**Documentation TODO**
+The [STS](http://www.sts.org/)(The Society of Thoracic Surgeons) score is a collection of validated risk models that are regulary updated based on the broad data base of the STS.The [online STS adult cardiac surgery risk calculator](http://riskcalc.sts.org/) is an Angular single page application, which collects the parameters and commincates via JSON to a a web-service("http://riskcalc.sts.org/stswebriskcalc/v1/calculate/stsall ") to obtain the scores. 
 
-* Describe approach of accessing http://riskcalc.sts.org/stswebriskcalc/v1/calculate/stsall 
-  via an json interface and fuzzy argument matching and translation for easy usage.
-* Works well witg pipes.
-* Show a generated figure
-* Discuss terms of use of STS web calculator and implications for the programmatical interface
-* Present web service posibbility with plumber:
-  potential for automatation of risk score calculation for databases/PDMS systems
+The STS score calculation in the riskscorer package is realized by providing a user friendly programmatical interface to the web-service.
+The programming interface is able to handle most of data codings automatically. Simple heuristics translate common clinical factor codings. For example "Female", "female" or "f" will all be detected as female gender. Boolean variables such as '0', '1', 'True', 'T', "Y", "Yes" will be detected. Each parameter is described in detail at the corresponding function documentation. Once the score is calculated, a data frame is returned, making it easy to work with the [pipe](https://cran.r-project.org/web/packages/magrittr/index.html) and [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html). 
 
-## ES I and ES II implementation
+Terms of use of STS web calculator does not permit the use of the web-service at the moment of writing this vignette. Keep in mind, that this might change and consider to check the terms of use at the [STS score website](http://riskcalc.sts.org/) before using the function.
 
-**Documentation TODO**
+### Web Service
+Thanks to the fantastic [plumber](https://github.com/trestletech/plumber) package, every score calculation function can be easily used as a web service. The hosting of such a service is well documented at the [plumber](http://plumber.trestletech.com/docs/hosting/) documentation.
 
-Terms and conditions prohibit the use for batch processing or reverse engenierring. However, the risk model is simple and coefficients of the logistic model are published in [XYZ et al., 20XX](http://citation). Therefor one can easily use the published coefficients and impose a robust R interface over the model. 
-- ES I
-- ES II 
+## ES II implementation
 
+The risk calculation of the EuroScore II is based on a logistic regression model and the coefficients are published in [doi:10.1093/ejcts/ezs043](https://www.ncbi.nlm.nih.gov/pubmed/?term=22378855). Therefor one can easily use the published coefficients and impose a robust R interface over the model.
 
 ### ES II examples
 
 ```{r}
-n = 10
+n = 3
 
 grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
             lvef = rep(seq(10, 60, length.out = n)),
@@ -351,45 +375,17 @@ threejs::scatterplot3js(y = sims$crea, x= sims$lvef, z = sims$Mortality,
                                        sims$Mortality*100),
                         renderer = "canvas")
 
-qplot(x = lvef, y = Mortality, facets = ~gender, color = crea, data = sims, geom = c("point")) + theme_bw()
+#qplot(x = lvef, y = Mortality, facets = ~gender, color = crea, data = sims, geom = c("point")) + theme_bw()
 
+middle <- function(x) {
+  r <- range(x)
+  (abs(r[2] - r[1])/2) + r[1]
+}
+
+ggplot(data = sims, aes(x=lvef, y=crea, fill=Mortality)) + 
+  geom_tile() + theme_minimal() + #geom_point(aes(size = Mortality)) +
+  facet_wrap(facets = ~ gender) +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = middle(sims$Mortality), 
+     space = "Lab", name="EuroScore II\nMortality")
 
 ```
-
-
-
-## German Aortic Valve Score
-```{r}
-# n = 500#23
-# 
-# grid_df <- expand.grid(crea = rep(seq(0.8, 3, length.out = n)),
-#             lvef = rep(seq(10, 60, length.out = n)),
-#             gender = c("Male", "Female"))
-# 
-# df_sim <- grid_df %>% as.data.frame %>% as.tbl
-# 
-# df_sim$age = 75
-# df_sim$proc_cabg = TRUE
-# df_sim$proc_valve = "AVR"
-# df_sim$chf_2w = TRUE
-# df_sim$height_cm = 170
-# df_sim$weight_kg = 75
-# 
-# sims <- df_sim %>% group_by(lvef, crea, gender) %>% do(
-# #  es_II()
-#   #data_frame(proc_valve = .$VALVE, proc_cabg = .$CABG, age = .$Age, gender = .$Sex, crea = .$crea, lvef = .$lvef)
-# )
-# 
-# sims_long <- tidyr::gather(data = sims, key = Risk, value = probability, Mortality:Short_LOS)
-# 
-# prom <- sims_long %>% dplyr::filter(Risk == "Mortality")
-# threejs::scatterplot3js(y = prom$crea, x= prom$lvef, z = prom$probability)
-# 
-# plot3D::scatter3D(y = prom$crea, x= prom$lvef, z = prom$probability)
-# 
-# lattice::wireframe(probability ~ lvef + crea, data = prom, drape = TRUE, colorkey = TRUE)
-# 
-# plot3D::surf3D(y = prom$crea, x= prom$lvef, z = prom$probability)
-```
-
-### GAVS Examples
