@@ -28,12 +28,12 @@ test_that("Test programming interface", {
 context("ES II internal calculation")
 
 test_that("ESII piecewise - Age and NYHA", {
-  expect_equal(0.0050, es_II(NYHA = "I", age = 50))
-  expect_equal(0.0050, es_II(NYHA = NULL, age = 50))
-  expect_equal(0.0055, es_II(NYHA = "II", age = 50))
-  expect_equal(0.0098, es_II(NYHA = "II", age = 80))
-  expect_equal(0.0118, es_II(NYHA = "III", age = 80))
-  expect_equal(0.0153, es_II(NYHA = "IV", age = 80))
+  expect_equal(0.0050, es_II(NYHA = "I", female = 0, age = 50))
+  expect_equal(0.0050, es_II(NYHA = NULL, female = 0, age = 50))
+  expect_equal(0.0055, es_II(NYHA = "II", female = 0, age = 50))
+  expect_equal(0.0098, es_II(NYHA = "II", female = 0, age = 80))
+  expect_equal(0.0118, es_II(NYHA = "III", female = 0, age = 80))
+  expect_equal(0.0153, es_II(NYHA = "IV", female = 0, age = 80))
 })
 
 test_that("ESII piecewise - Gender", {
@@ -43,102 +43,102 @@ test_that("ESII piecewise - Gender", {
 })
 
 test_that("ESII piecewise - Renal impairment", {
-  expect_equal(0.005, es_II(age = 50, renal_dysfunc = NULL))
-  expect_equal(0.005, es_II(age = 50, renal_dysfunc = "gt_85"))
-  expect_equal(0.0067, es_II(age = 50, renal_dysfunc = "50_85"))
-  expect_equal(0.0117, es_II(age = 50, renal_dysfunc = "lt_50"))
-  expect_equal(0.0094, es_II(age = 50, renal_dysfunc = "dialysis"))
+  expect_equal(0.005, es_II(age = 50, female = 0, renal_dysfunc = NULL))
+  expect_equal(0.005, es_II(age = 50, female = 0, renal_dysfunc = "gt_85"))
+  expect_equal(0.0067, es_II(age = 50, female = 0, renal_dysfunc = "50_85"))
+  expect_equal(0.0117, es_II(age = 50, female = 0, renal_dysfunc = "lt_50"))
+  expect_equal(0.0094, es_II(age = 50, female = 0, renal_dysfunc = "dialysis"))
 })
 
 test_that("ESII piecewise - Poor mobility", {
-  expect_equal(0.0063, es_II(age = 50, nm_mob = 1))
-  expect_equal(0.005, es_II(age = 50, nm_mob = 0))
-  expect_equal(0.005, es_II(age = 50, nm_mob = NULL))
+  expect_equal(0.0063, es_II(age = 50, female = 0, nm_mob = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, nm_mob = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, nm_mob = NULL))
 })
 
 test_that("ESII piecewise - Extracardiac Arteriopathy", {
-  expect_equal(0.0085, es_II(age = 50, ECA = 1))
-  expect_equal(0.005, es_II(age = 50, ECA = 0))
-  expect_equal(0.005, es_II(age = 50, ECA = NULL))
+  expect_equal(0.0085, es_II(age = 50, female = 0, ECA = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, ECA = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, ECA = NULL))
 })
 
 test_that("ESII piecewise - Redo", {
-  expect_equal(0.0151, es_II(age = 50, redo = 1))
-  expect_equal(0.005, es_II(age = 50, redo = 0))
-  expect_equal(0.005, es_II(age = 50, redo = NULL))
+  expect_equal(0.0151, es_II(age = 50, female = 0, redo = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, redo = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, redo = NULL))
 })
 
 test_that("ESII piecewise - Chronic lung disease", {
-  expect_equal(0.006, es_II(age = 50, CPD = 1))
-  expect_equal(0.005, es_II(age = 50, CPD = 0))
-  expect_equal(0.005, es_II(age = 50, CPD = NULL))
+  expect_equal(0.006, es_II(age = 50, female = 0, CPD = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, CPD = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, CPD = NULL))
 })
 
 test_that("ESII piecewise - Active endocarditis", {
-  expect_equal(0.0092, es_II(age = 50, active_endo = 1))
-  expect_equal(0.005, es_II(age = 50, active_endo = 0))
-  expect_equal(0.005, es_II(age = 50, active_endo = NULL))
+  expect_equal(0.0092, es_II(age = 50, female = 0, active_endo = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, active_endo = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, active_endo = NULL))
 })
 
 test_that("ESII piecewise - Critical pre-op state", {
-  expect_equal(0.0146, es_II(age = 50, critical = 1))
-  expect_equal(0.005, es_II(age = 50, critical = 0))
-  expect_equal(0.005, es_II(age = 50, critical = NULL))
+  expect_equal(0.0146, es_II(age = 50, female = 0, critical = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, critical = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, critical = NULL))
 })
 
 test_that("ESII piecewise - IDDM", {
-  expect_equal(0.0071, es_II(age = 50, IDDM = 1))
-  expect_equal(0.005, es_II(age = 50, IDDM = 0))
-  expect_equal(0.005, es_II(age = 50, IDDM = NULL))
+  expect_equal(0.0071, es_II(age = 50, female = 0, IDDM = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, IDDM = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, IDDM = NULL))
 })
 
 test_that("ESII piecewise - CCS4", {
-  expect_equal(0.0062, es_II(age = 50, CCS4 = 1))
-  expect_equal(0.005, es_II(age = 50, CCS4 = 0))
-  expect_equal(0.005, es_II(age = 50, CCS4 = NULL))
+  expect_equal(0.0062, es_II(age = 50, female = 0, CCS4 = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, CCS4 = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, CCS4 = NULL))
 })
 
 test_that("ESII piecewise - LV Function", {
-  expect_equal(0.005, es_II(age = 50, lv_func = NULL))
-  expect_equal(0.005, es_II(age = 50, lv_func = "gt_50"))
-  expect_equal(0.0068, es_II(age = 50, lv_func = "31_50"))
-  expect_equal(0.0111, es_II(age = 50, lv_func = "21_30"))
-  expect_equal(0.0126, es_II(age = 50, lv_func = "lt_20"))
+  expect_equal(0.005, es_II(age = 50, female = 0, lv_func = NULL))
+  expect_equal(0.005, es_II(age = 50, female = 0, lv_func = "gt_50"))
+  expect_equal(0.0068, es_II(age = 50, female = 0, lv_func = "31_50"))
+  expect_equal(0.0111, es_II(age = 50, female = 0, lv_func = "21_30"))
+  expect_equal(0.0126, es_II(age = 50, female = 0, lv_func = "lt_20"))
 })
 
 test_that("ESII piecewise - Recent MI", {
-  expect_equal(0.0058, es_II(age = 50, recent_mi = 1))
-  expect_equal(0.005, es_II(age = 50, recent_mi = 0))
-  expect_equal(0.005, es_II(age = 50, recent_mi = NULL))
+  expect_equal(0.0058, es_II(age = 50, female = 0, recent_mi = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, recent_mi = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, recent_mi = NULL))
 })
 
 test_that("ESII piecewise - Pulmonary hypertension", {
-  expect_equal(0.005, es_II(age = 50, sPAP = NULL))
-  expect_equal(0.005, es_II(age = 50, sPAP = "lt_31"))
-  expect_equal(0.0060, es_II(age = 50, sPAP = "31_55"))
-  expect_equal(0.0071, es_II(age = 50, sPAP = "gt_55"))
+  expect_equal(0.005, es_II(age = 50, female = 0, sPAP = NULL))
+  expect_equal(0.005, es_II(age = 50, female = 0, sPAP = "lt_31"))
+  expect_equal(0.0060, es_II(age = 50, female = 0, sPAP = "31_55"))
+  expect_equal(0.0071, es_II(age = 50, female = 0, sPAP = "gt_55"))
 })
 
 test_that("ESII piecewise - Urgency", {
-  expect_equal(0.005, es_II(age = 50, urgency = NULL))
-  expect_equal(0.005, es_II(age = 50, urgency = "elective"))
-  expect_equal(0.0068, es_II(age = 50, urgency = "urgent"))
-  expect_equal(0.0100, es_II(age = 50, urgency = "emergency"))
-  expect_equal(0.0192, es_II(age = 50, urgency = "salvage"))
+  expect_equal(0.005, es_II(age = 50, female = 0, urgency = NULL))
+  expect_equal(0.005, es_II(age = 50, female = 0, urgency = "elective"))
+  expect_equal(0.0068, es_II(age = 50, female = 0, urgency = "urgent"))
+  expect_equal(0.0100, es_II(age = 50, female = 0, urgency = "emergency"))
+  expect_equal(0.0192, es_II(age = 50, female = 0, urgency = "salvage"))
 })
 
 test_that("ESII piecewise - Procedure Weight", {
-  expect_equal(0.005, es_II(age = 50, proc_weight = NULL))
-  expect_equal(0.005, es_II(age = 50, proc_weight = "isolated-CABG"))
-  expect_equal(0.005, es_II(age = 50, proc_weight = "single-non-CABG"))
-  expect_equal(0.0086, es_II(age = 50, proc_weight = "2-procedures"))
-  expect_equal(0.0131, es_II(age = 50, proc_weight = "3-procedures"))
+  expect_equal(0.005, es_II(age = 50, female = 0, proc_weight = NULL))
+  expect_equal(0.005, es_II(age = 50, female = 0, proc_weight = "isolated-CABG"))
+  expect_equal(0.005, es_II(age = 50, female = 0, proc_weight = "single-non-CABG"))
+  expect_equal(0.0086, es_II(age = 50, female = 0, proc_weight = "2-procedures"))
+  expect_equal(0.0131, es_II(age = 50, female = 0, proc_weight = "3-procedures"))
 })
 
 test_that("ESII piecewise - Surgery on thoracic aorta", {
-  expect_equal(0.0095, es_II(age = 50, thoracic_aorta = 1))
-  expect_equal(0.005, es_II(age = 50, thoracic_aorta = 0))
-  expect_equal(0.005, es_II(age = 50, thoracic_aorta = NULL))
+  expect_equal(0.0095, es_II(age = 50, female = 0, thoracic_aorta = 1))
+  expect_equal(0.005, es_II(age = 50, female = 0, thoracic_aorta = 0))
+  expect_equal(0.005, es_II(age = 50, female = 0, thoracic_aorta = NULL))
 })
 
 
@@ -209,6 +209,7 @@ test_that("ESII gets calculated correctly according to the published model", {
                       proc_weight = "single-non-CABG")
 
   esII_test3 <- es_II(age = 60,
+                      female = 0,
                       redo = 1,
                       active_endo = 1,
                       NYHA = "III",
@@ -218,6 +219,7 @@ test_that("ESII gets calculated correctly according to the published model", {
                       )
 
   esII_test4 <- es_II(age = 45,
+                      female = 0,
                       critical = 1,
                       urgency = "salvage",
                       proc_weight = "single-non-CABG",

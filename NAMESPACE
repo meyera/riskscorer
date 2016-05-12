@@ -1,4 +1,5 @@
 exportPattern("^calc_[[:alpha:]]+")
 export("radial_plot")
 export("cc_eGFR")
+export("es_II")
 import("ensurer")

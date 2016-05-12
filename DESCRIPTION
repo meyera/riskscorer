@@ -1,11 +1,11 @@
 Package: riskscorer
 Type: Package
 Title: An R Package for Calculating Surgical Risk Scores
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: person("Alexander", "Meyer", email = "meyer.alexander@gmail.com",
                   role = c("aut", "cre"))
 Maintainer: Alexander Meyer <meyer.alexander@gmail.com>
-Description: More about what it does (maybe more than one line)
+Description: riskscorer provides an interface for calculation of clinical risk scores.
 License: MIT
 LazyData: TRUE
 Imports:

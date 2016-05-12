@@ -155,7 +155,7 @@ do_sts_request <- function(queryList, verbose = FALSE) {
 #'                     following criteria:
 #'                      1. organisms cultured from valve or vegetation.
 #'                      2. 2 or more of the following signs or symptoms:
-#'                          * fever (>38°C)
+#'                          * fever (>38 degrees C)
 #'                          * new or changing murmur*
 #'                          * embolic phenomena*
 #'                          * skin manifestations* (i.e., petechiae, splinter

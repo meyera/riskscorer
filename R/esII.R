@@ -1,8 +1,6 @@
 #' Calculates the ES II score
 #'
-#' Citation:
-#'
-#' FUnction for internal use only
+#' FUnction for calculation without fuzzy parameter matching
 #'
 #' @param NYHA character vector with the following values: NULL or 'I', 'II', 'III', 'IV'
 #' @param IDDM numeric 0 or 1
@@ -24,8 +22,6 @@
 #'
 #' @return predicted probability of mortality
 #' @export
-#'
-#' @examples
 es_II <- function(age,
                   female,
                   NYHA = NULL,
@@ -170,9 +166,7 @@ es_II <- function(age,
 
 #' Calculates the EuroScore II
 #'
-#' Citation:
-#'
-#' Fuzzy matching
+#' Calculates the EuroScore II with fuzzy matching
 #'
 #' @param age Age in years, must be within 20 and 100
 #' @param gender Gender of the patient, should be "Male" or "Female", 'F' or 'M',
@@ -252,9 +246,6 @@ es_II <- function(age,
 #'
 #' @return the calculated risk for operative mortality. Range: 0.000-1.000
 #' @export
-#'
-#' @examples
-#
 # Plumber decoration
 #* @get /calc_esII
 #* @post /calc_esII

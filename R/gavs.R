@@ -5,7 +5,7 @@
 # European Journal of Cardio-Thoracic Surgery 43(5), 971–7.
 # http://doi.org/10.1093/ejcts/ezt114
 
-#' Implements the GAVS model
+#' Implements the GAVS model -- CURRENTLY IN DEVELOPMENT!!!!!!!!!!
 #'
 #' @param age_grp Age groups (NULL=ref,ref="18_65", "66_70", "71_75", "76_80", "81_85", ">85")
 #' @param female boolean string
@@ -24,8 +24,6 @@
 #'
 #' @return the German aortic valve score expected probability of in-hospital-mortality
 #' @export
-#'
-#' @examples
 gavs <- function(age_grp = NULL,
                  female = NULL,
                  bmi_grp = NULL,
@@ -60,29 +58,28 @@ gavs <- function(age_grp = NULL,
 }
 
 
-#' Title
+#' Calculates the GAVS
 #'
-#' @param age
-#' @param sex
-#' @param weight_kg
-#' @param height_cm
-#' @param bmi
-#' @param nyhaIV
-#' @param mi_within_3w
-#' @param pht
-#' @param no_sr
-#' @param lvef
-#' @param lvef_grp
-#' @param endocarditis
-#' @param redo
-#' @param aterial_vessel_diseae
-#' @param copd
-#' @param preop_dialysis_or_rf
+#' currently in development
 #'
-#' @return
-#' @export
+#' @param age TODO
+#' @param sex TODO
+#' @param weight_kg TODO
+#' @param height_cm TODO
+#' @param bmi TODO
+#' @param nyhaIV TODO
+#' @param mi_within_3w TODO
+#' @param pht TODO
+#' @param no_sr TODO
+#' @param lvef TODO
+#' @param lvef_grp TODO
+#' @param endocarditis TODO
+#' @param redo TODO
+#' @param aterial_vessel_diseae TODO
+#' @param copd TODO
+#' @param preop_dialysis_or_rf TODO
 #'
-#' @examples
+#' @return TODO
 #
 #  Plumber decoration
 #* @get /calc_gavs
@@ -105,5 +102,5 @@ calc_gavs <- function(age = NULL,
                       preop_dialysis_or_rf = NULL,
                       emergency = NULL
                       ) {
-
+  NULL
 }
