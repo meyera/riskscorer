@@ -18,12 +18,11 @@ bibliography: paper.bib
 
 # Summary
 
-Clinical risk scores are important tools in therapeutic decision making as well as for analysis and adjustments in clinical research. Often risk scores are published without an easily accessible interface for calculation. And if tools exist, these are mostly web based user interfaces and therefor not suitable for either batch processing in research or integration into the hospital's clinical information system infrastructure. 
+Clinical risk scores are important tools in therapeutic decision making as well as for analysis and adjustments in clinical research. Often risk scores are published without an easily accessible interface for calculation. And if tools exist, these are mostly web based user interfaces and therefore not suitable for either batch processing in research or integration into the hospital's clinical information system infrastructure. 
 
 We developed the _riskscorer_ package for easy and automatic clinical risk score calculation with the following features in mind:
 
 * simple programming interface
-* extensibility
 * flexible handling of differing data codings
 * individual patient risk calculation as well as the possibility of batch processing
 * an HTTP web-service interface based on the plumber [@plumber] package for easy integration into an existing clinical information system infrastructure
