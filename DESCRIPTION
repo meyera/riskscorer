@@ -13,7 +13,6 @@ Imports:
     httr,
     jsonlite,
     purrr,
-    plumber,
     ensurer,
     stringr,
     car,
