@@ -21,8 +21,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(threejs)
 })))
 
-knitr::opts_chunk$set(dev = "CairoPNG",
-                      fig.width = 6,
+knitr::opts_chunk$set(fig.width = 6,
                       fig.height = 5,
                       cache=FALSE,
                       echo = FALSE)

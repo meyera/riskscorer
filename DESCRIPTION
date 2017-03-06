@@ -16,10 +16,12 @@ Imports:
     ensurer,
     stringr,
     car,
-    readr
+    readr,
+    wakefield,
+    threejs
 Suggests:
     testthat,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
